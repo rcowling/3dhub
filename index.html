@@ -1,0 +1,252 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>Hayden Library Geospatial Hub 3D Model</title>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.18/esri/themes/light/main.css" />
+    <link href="https://unpkg.com/tabulator-tables@4.9.3/dist/css/tabulator.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+<script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.9.3/dist/js/tabulator.min.js"></script>
+    <script src="https://js.arcgis.com/4.18/"></script>
+    
+
+
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+
+    <script>
+      require(["esri/Map", "esri/views/SceneView", "esri/layers/FeatureLayer", "esri/widgets/Legend"], function(
+        Map,
+        SceneView,
+        FeatureLayer,
+        Legend
+      ) {        
+
+        var renderer = {
+          type: "simple", // autocasts as new SimpleRenderer()
+          symbol: {
+            type: "polygon-3d",  // autocasts as new PolygonSymbol3D()
+            symbolLayers: [{
+              type: "extrude",   // autocasts as new ExtrudeSymbol3DLayer()
+              size: 0.0762,        // Height of the extrusion in meters              
+              material: { 
+                color: "black" 
+              },
+              edges: {
+                  type: "solid",
+                  color: "#999",
+                  size: 0.7
+                },
+            }]
+          }
+        }
+
+         var Baserenderer = {
+          type: "simple", // autocasts as new SimpleRenderer()
+          symbol: {
+            type: "polygon-3d",  // autocasts as new PolygonSymbol3D()
+            symbolLayers: [{
+              type: "extrude",   // autocasts as new ExtrudeSymbol3DLayer()
+              size: 0.12192,        // Height of the extrusion in meters              
+              material: { 
+                color: "black" 
+              },
+              edges: {
+                  type: "solid",
+                  color: "#999",
+                  size: 0
+                },
+            }]
+          }
+        }
+
+
+
+
+
+
+
+           /* type: "polygon-3d", // autocasts as new PolygonSymbol3D()
+
+
+
+
+
+
+
+            symbolLayers: [
+              {
+                type: "extrude" // autocasts as new ExtrudeSymbol3DLayer()
+              }
+            ]
+          },
+          visualVariables: [
+            {
+              type: "size",
+              field: "Cabinets_Test_Height",              
+            },
+            {
+              type: "color",
+              field: "Cabinets_Test_Height",
+              normalizationField: "Cabinets_Test_Height",
+              legendOptions: {
+                title: "% population with income below poverty level"
+              },
+              stops: [
+                {
+                  value: 0.1,
+                  color: "#00000",
+                  label: "<15%"
+                },
+               
+              ]
+            }
+          ]
+        };*/
+        // Layer for the cabinets
+        var cabLayer = new FeatureLayer({
+          url:
+            "https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/Cabinets_join/FeatureServer/0",
+          renderer: renderer,
+          title: "Population living in poverty by county",
+          outFields: ["*"],      
+          popupTemplate: {
+            // autocasts as new PopupTemplate()
+            title: "{Sheet1__DRAWER_ID}, {Sheet1__STACK_ID}",
+            content: "This is drawer {Sheet1__DRAWER_ID} in Cabinet {Sheet1__CAB_ID} in Stack {Sheet1__STACK_ID}",
+          }    
+        });
+        // Cabinets base layer
+        var baseLayer = new FeatureLayer({
+          url:
+            "https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/Cabinets_Base/FeatureServer/0",
+          renderer: Baserenderer,
+          title: "Population living in poverty by county",
+          outFields: ["*"],      
+          popupTemplate: {
+            // autocasts as new PopupTemplate()
+            title: "{Sheet1__DRAWER_ID}, {Sheet1__STACK_ID}",
+            content: "This is drawer {Sheet1__DRAWER_ID} in Cabinet {Sheet1__CAB_ID} in Stack {Sheet1__STACK_ID}",
+          }    
+        });
+
+        var map = new Map({
+          basemap: "dark-gray-vector",
+          layers: [cabLayer, baseLayer]
+        });
+
+        var view = new SceneView({
+          container: "viewDiv",
+          /*highlightOptions: {
+            color: [255,0,0]
+          },*/
+          map: map,
+          camera: {
+            position: {
+              latitude: 33.4193364,
+              longitude: -111.9343798,
+              z: 100
+            },
+            tilt: 45,
+            heading: 10
+          }
+        });
+        view.on("click", function(event) {
+          // only include graphics from hurricanesLayer in the hitTest
+          const opts = {
+            include: cabLayer
+          }
+          view.hitTest(event, opts).then(function(response) {
+            // check if a feature is returned from the cabLayer
+            if (response.results.length) {
+              const graphic = response.results[0].graphic;
+              // Get the Drawer_ID of the clicked drawer
+              var drawerId = graphic.attributes.Sheet1__DRAWER_ID;
+              console.log(drawerId);
+              // Call to the ArcGIS REST API to retreive the maps in each drawer
+              $.ajax({
+                      dataType: 'json',
+                      url: 'https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/maps129/FeatureServer/0/query?where=Drawer_ID+%3D+' + drawerId + '&objectIds=&time=&resultType=none&outFields=*&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
+                      type: "GET",    
+                      success: function(data) {
+                       console.log(data.features);
+                       // Get the features from the REST API 
+                       var features = data.features;  
+                       $('#drawerModal').modal('show');  
+                       // Create a new table with the array of features 
+                       var table = new Tabulator("#example-table", {
+                          data:features, // the initial data for the table
+                          pagination: "local",
+                          paginationSize: 10,
+                          columns:[
+                              {title:"Title", field:"attributes.Title"},
+                              {title:"Author", field:"attributes.Author"},
+                              {title:"Publisher", field:"attributes.Publisher"},
+                              {title:"Publication Date", field:"attributes.Publication_Date"},
+                              {title:"Scale", field:"attributes.Scale"},
+                              {title:"Catalog Item", field:"attributes.Catalog_Link", formatter:"link"},
+                              {title:"Call Number", field:"attributes.Call_Number"},
+                              {title:"MMS", field:"attributes.MMS"},
+                              {title:"Barcode", field:"attributes.Barcode"},
+                              {title:"OCoLC", field:"attributes.OCoLC"},
+                              {title:"GovDoc", field:"attributes.GovDoc"},
+                              {title:"SuDoc", field:"attributes.SuDoc"},
+                              {title:"Item Number", field:"attributes.Item_Number"},
+                              {title:"Language", field:"attributes.Language"},
+                              {title:"Theme", field:"attributes.Theme"},
+                              {title:"Location", field:"attributes.Geo"},
+                              {title:"Condition", field:"attributes.Condition"},
+                              {title:"Size (cm)", field:"attributes.Size__cm_"},
+                              {title:"Inventory Date", field:"attributes.Inventory_Date"},
+                              {title:"File Name", field:"attributes.File_Name"},
+                              {title:"Drawer ID", field:"attributes.Drawer_ID"},
+                              {title:"Drawer Description", field:"attributes.Drawer_Description"},
+                              {title:"Notes", field:"attributes.Notes"}
+                          ],     
+                      });
+                      }
+              });   
+            }
+          });
+        });
+
+        
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv"></div>
+    <div class="modal" id="drawerModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Modal title</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div id="example-table"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary">Save changes</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+</div>
+  </body>
+</html>
