@@ -7,10 +7,11 @@
     <link rel="stylesheet" href="https://js.arcgis.com/4.18/esri/themes/light/main.css" />
     <link href="https://unpkg.com/tabulator-tables@4.9.3/dist/css/tabulator.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <!-- Load icon library -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
-
-<script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.9.3/dist/js/tabulator.min.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.9.3/dist/js/tabulator.min.js"></script>
     <script src="https://js.arcgis.com/4.18/"></script>
     
 
@@ -24,6 +25,52 @@
         height: 100%;
         width: 100%;
       }
+
+      * {
+  box-sizing: border-box;
+}
+
+/* Style the search field */
+form.example input[type=text] {
+  padding: 10px;
+  font-size: 17px;
+  border: 1px solid grey;
+  float: left;
+  width: 40%;
+  background: #f1f1f1;
+  z-index: 999999;
+  position: absolute;
+  left: 70px;
+  top: 20px;
+}
+
+/* Style the submit button */
+form.example button {
+  position: absolute;
+  z-index: 999999;
+  top: 20px;
+  left: 620px;
+  float: left;
+  width: 5%;
+  padding: 14px;
+  background: #2196F3;
+  color: white;
+  font-size: 17px;
+  border: 1px solid grey;
+  border-left: none; /* Prevent double borders */
+  cursor: pointer;
+}
+
+form.example button:hover {
+  background: #0b7dda;
+}
+
+/* Clear floats */
+form.example::after {
+  content: "";
+  clear: both;
+  display: table;
+}
     </style>
 
     <script>
@@ -116,6 +163,37 @@
           ]
         };*/
         // Layer for the cabinets
+      // Creates a  new table to hold our map attributes  
+      var table = new Tabulator("#example-table", {          
+          pagination: "local",
+          paginationSize: 10,
+          columns:[
+              {title:"Title", field:"attributes.Title"},
+              {title:"Author", field:"attributes.Author"},
+              {title:"Publisher", field:"attributes.Publisher"},
+              {title:"Publication Date", field:"attributes.Publication_Date"},
+              {title:"Scale", field:"attributes.Scale"},
+              {title:"Catalog Item", field:"attributes.Catalog_Link", formatter:"link"},
+              {title:"Call Number", field:"attributes.Call_Number"},
+              {title:"MMS", field:"attributes.MMS"},
+              {title:"Barcode", field:"attributes.Barcode"},
+              {title:"OCoLC", field:"attributes.OCoLC"},
+              {title:"GovDoc", field:"attributes.GovDoc"},
+              {title:"SuDoc", field:"attributes.SuDoc"},
+              {title:"Item Number", field:"attributes.Item_Number"},
+              {title:"Language", field:"attributes.Language"},
+              {title:"Theme", field:"attributes.Theme"},
+              {title:"Location", field:"attributes.Geo"},
+              {title:"Condition", field:"attributes.Condition"},
+              {title:"Size (cm)", field:"attributes.Size__cm_"},
+              {title:"Inventory Date", field:"attributes.Inventory_Date"},
+              {title:"File Name", field:"attributes.File_Name"},
+              {title:"Drawer ID", field:"attributes.Drawer_ID"},
+              {title:"Drawer Description", field:"attributes.Drawer_Description"},
+              {title:"Notes", field:"attributes.Notes"}
+          ],     
+      });
+
         var cabLayer = new FeatureLayer({
           url:
             "https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/Cabinets_join/FeatureServer/0",
@@ -186,44 +264,34 @@
                        var features = data.features;  
                        $('#drawerModal').modal('show');  
                        // Create a new table with the array of features 
-                       var table = new Tabulator("#example-table", {
-                          data:features, // the initial data for the table
-                          pagination: "local",
-                          paginationSize: 10,
-                          columns:[
-                              {title:"Title", field:"attributes.Title"},
-                              {title:"Author", field:"attributes.Author"},
-                              {title:"Publisher", field:"attributes.Publisher"},
-                              {title:"Publication Date", field:"attributes.Publication_Date"},
-                              {title:"Scale", field:"attributes.Scale"},
-                              {title:"Catalog Item", field:"attributes.Catalog_Link", formatter:"link"},
-                              {title:"Call Number", field:"attributes.Call_Number"},
-                              {title:"MMS", field:"attributes.MMS"},
-                              {title:"Barcode", field:"attributes.Barcode"},
-                              {title:"OCoLC", field:"attributes.OCoLC"},
-                              {title:"GovDoc", field:"attributes.GovDoc"},
-                              {title:"SuDoc", field:"attributes.SuDoc"},
-                              {title:"Item Number", field:"attributes.Item_Number"},
-                              {title:"Language", field:"attributes.Language"},
-                              {title:"Theme", field:"attributes.Theme"},
-                              {title:"Location", field:"attributes.Geo"},
-                              {title:"Condition", field:"attributes.Condition"},
-                              {title:"Size (cm)", field:"attributes.Size__cm_"},
-                              {title:"Inventory Date", field:"attributes.Inventory_Date"},
-                              {title:"File Name", field:"attributes.File_Name"},
-                              {title:"Drawer ID", field:"attributes.Drawer_ID"},
-                              {title:"Drawer Description", field:"attributes.Drawer_Description"},
-                              {title:"Notes", field:"attributes.Notes"}
-                          ],     
-                      });
+                       table.setData(features);
                       }
               });   
             }
           });
         });
-
+        // Code for the search bar functions
+        $( "#submit" ).click(function() {
+          // get the value of the search box
+          var searchVal = $( "#search" ).val();
+          // call to query the REST API using the value of the search
+          $.ajax({
+                  dataType: 'json',
+                  url: 'https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/maps129/FeatureServer/0/query?where=Title+LIKE+%27%25' + searchVal + '%25%27&objectIds=&time=&resultType=none&outFields=*&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
+                  type: "GET",    
+                  success: function(data) {
+                   console.log(data.features);
+                   // Get the features from the REST API 
+                   var searchRes = data.features;  
+                   $('#drawerModal').modal('show');  
+                   // Create a new table with the array of features 
+                   table.setData(searchRes);
+                  }
+              });   
+        });
+          
         
-      });
+      }); // end of map JS
     </script>
   </head>
 
@@ -248,5 +316,10 @@
       </div>
     </div>
 </div>
+
+<form class="example">
+  <input type="text" placeholder="Search.." name="search" id="search">
+  <button type="button" id="submit"><i class="fa fa-search"></i></button>
+</form>
   </body>
 </html>
