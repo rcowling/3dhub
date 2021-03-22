@@ -497,7 +497,64 @@ form.example::after {
               }
             }]
           }
-        };        
+        }; 
+
+        // style for the globe base 
+        var globeBaseRenderer = {
+          type: "simple", // autocasts as new SimpleRenderer()
+          symbol: {
+            type: "polygon-3d", // autocasts as new PolygonSymbol3D()
+            symbolLayers: [{ type: "extrude" }] // autocasts as new ExtrudeSymbol3DLayer()
+          },
+          label: "Style for the printer table",
+          visualVariables: [
+            {
+              type: "size", // indicates this is a size visual variable
+              field: "Height", // height of the feature      
+              stops: [
+                {
+                  value: 0.3, // features meeting this value from height field
+                  size: 0.09144 // will be extruded by this height in meters
+                },
+                {
+                  value: 3.39, // features meeting this value from height field
+                  size: 1.033272 // will be extruded by this height in meters
+                }
+              ]
+            },
+            {
+              type: "color",
+              field: "Height",      
+              stops: [
+                {
+                  value: 0.3,
+                  color: "#8B6B59"
+                },
+                {
+                  value: 3.39,
+                  color: "#8B6B59"
+                }
+              ]
+            }
+          ]
+        };   
+
+        // style for the globe layer  
+        var globeRenderer = {
+          type: "simple", // autocasts as new SimpleRenderer()          
+          symbol: {
+            type: "mesh-3d", // autocasts as new MeshSymbol3D()
+            symbolLayers: [{
+              type: "fill", // autocasts as new FillSymbol3DLayer()
+              material: {
+                color: "#54FB00"
+              },                         
+            }]
+          }
+        }; 
+
+        
+
 
       // Creates a  new table to hold our map attributes  
       var table = new Tabulator("#example-table", {          
@@ -724,17 +781,64 @@ form.example::after {
         // Flatscreens Layer
         var screensLayer = new SceneLayer({
           url: "https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/Flatscreens/SceneServer/layers/0",    
-          renderer: screensRenderer      
+          renderer: screensRenderer,
+          title: "Flatscreens",
+          outFields: ["*"],      
+          popupTemplate: {
+            // autocasts as new PopupTemplate()
+            title: "Flatscreens",
+            content: "Flatscreens",
+          }          
         });
-        // style for the flat screens layer
+
+        // Globe Base Layer
+        var globeBaseLayer = new FeatureLayer({
+          url:
+            "https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/globe_base/FeatureServer/0",
+          renderer: globeBaseRenderer,
+          title: "Globe",
+          outFields: ["*"],      
+          popupTemplate: {
+            // autocasts as new PopupTemplate()
+            title: "Globe",
+            content: "Globe",
+          }    
+        });
         
+        // Flatscreens Layer
+        var globeLayer = new SceneLayer({
+          url: "https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/globe/SceneServer/layers/0",    
+          renderer: globeRenderer,
+          title: "Globe",
+          outFields: ["*"],      
+          popupTemplate: {
+            // autocasts as new PopupTemplate()
+            title: "Globe",
+            content: "Globe",
+          }          
+        });
+
+        // Conference Table Layer
+        var confTableLayer = new FeatureLayer({
+          url:
+            "https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/conference_table/FeatureServer/0",
+          renderer: workTableRenderer,
+          title: "Conference Table",
+          outFields: ["*"],      
+          popupTemplate: {
+            // autocasts as new PopupTemplate()
+            title: "Conference Table",
+            content: "Conference Table",
+          }    
+        }); 
 
         
 
         var map = new Map({
           basemap: "dark-gray-vector",
           layers: [cabLayer, baseLayer, workTableLayer, tallCabLayer, woodTableLayer, greyTableLayer, printTableLayer,
-          scannerLayer, wallsLayer, table3Layer, table2Layer, boxLayer, frontDeskLayer, screensLayer]
+          scannerLayer, wallsLayer, table3Layer, table2Layer, boxLayer, frontDeskLayer, screensLayer, globeBaseLayer,
+          globeLayer, confTableLayer]
         });
 
         var view = new SceneView({
