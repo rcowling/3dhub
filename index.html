@@ -311,8 +311,6 @@ form.example::after {
           ]
         };
 
-
-
         // style for the large scanner  
         var scannerRenderer = {
           type: "simple", // autocasts as new SimpleRenderer()
@@ -416,11 +414,11 @@ form.example::after {
               stops: [
                 {
                   value: 0.23, // features meeting this value from height field
-                  size: 0.067056 // will be extruded by this height in meters
+                  size: 0.13001816142807595678 // will be extruded by this height in meters
                 },
                 {
                   value: 2.9, // features meeting this value from height field
-                  size: 0.9144 // will be extruded by this height in meters
+                  size: 0.9773621614280765257 // will be extruded by this height in meters
                 }
               ]
             },
@@ -481,8 +479,74 @@ form.example::after {
           ]
         };
 
+         // style for the Bookcases  
+        var bookRenderer = {
+          type: "simple", // autocasts as new SimpleRenderer()
+          symbol: {
+            type: "polygon-3d", // autocasts as new PolygonSymbol3D()
+            symbolLayers: [
+              { 
+                type: "extrude", 
+                edges: {
+                        type: "solid", // autocasts as new SolidEdges3D()
+                        color: [0, 0, 0, 0.5]
+                },
+              }
+            ] // autocasts as new ExtrudeSymbol3DLayer()
+          },           
+          label: "Style for the geosandbox",
+          visualVariables: [
+            {
+              type: "size", // indicates this is a size visual variable
+              field: "Height", // height of the feature      
+              stops: [
+                {
+                  value: 3.88923, // features meeting this value from height field
+                  size: 1.185437304 // will be extruded by this height in meters
+                },
+                {
+                  value: 6.80037, // features meeting this value from height field
+                  size: 2.072752776 // will be extruded by this height in meters
+                }
+              ]
+            },
+            {
+              type: "color",
+              field: "Height",      
+              stops: [
+                {
+                  value: 3.88923,
+                  color: "#E60000"
+                },
+                {
+                  value: 6.80037,
+                  color: "#E60000"
+                }
+              ]
+            }
+          ]
+        };
+
         // style for the tall cabinet layer  
         var screensRenderer = {
+          type: "simple", // autocasts as new SimpleRenderer()
+          symbol: {
+            type: "mesh-3d", // autocasts as new MeshSymbol3D()
+            symbolLayers: [{
+              type: "fill", // autocasts as new FillSymbol3DLayer()
+              material: {
+                color: "#376CBD"
+              },
+              edges: {
+                type: "solid", // autocasts as new SolidEdges3D()
+                color: [0, 0, 0, 0.5]
+              }
+            }]
+          }
+        }; 
+
+        // style for the grey tables  
+        var greyRenderer = {
           type: "simple", // autocasts as new SimpleRenderer()
           symbol: {
             type: "mesh-3d", // autocasts as new MeshSymbol3D()
@@ -553,6 +617,46 @@ form.example::after {
           }
         }; 
 
+        // style for the grey table  
+        var smallWoodTableRenderer = {
+          type: "simple", // autocasts as new SimpleRenderer()
+          symbol: {
+            type: "polygon-3d", // autocasts as new PolygonSymbol3D()
+            symbolLayers: [{ type: "extrude" }] // autocasts as new ExtrudeSymbol3DLayer()
+          },
+          label: "Style for the small wooden table",
+          visualVariables: [
+            {
+              type: "size", // indicates this is a size visual variable
+              field: "Height", // height of the feature      
+              stops: [
+                {
+                  value: 0.426568771089488, // features meeting this value from height field
+                  size: 0.13001816142807595678 // will be extruded by this height in meters
+                },
+                {
+                  value: 3.20656877108949, // features meeting this value from height field
+                  size: 0.9773621614280765257 // will be extruded by this height in meters
+                }
+              ]
+            },
+            {
+              type: "color",
+              field: "Height",      
+              stops: [
+                {
+                  value: 0.426568771089488,
+                  color: "#F9E8BA"
+                },
+                {
+                  value: 3.20656877108949,
+                  color: "#828282"
+                }
+              ]
+            }
+          ]
+        };
+
         
 
 
@@ -617,12 +721,12 @@ form.example::after {
           url:
             "https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/work_station_table/FeatureServer/0",
           renderer: workTableRenderer,
-          title: "Population living in poverty by county",
+          title: "Work Table",
           outFields: ["*"],      
           popupTemplate: {
             // autocasts as new PopupTemplate()
-            title: "{Sheet1__DRAWER_ID}, {Sheet1__STACK_ID}",
-            content: "This is drawer {Sheet1__DRAWER_ID} in Cabinet {Sheet1__CAB_ID} in Stack {Sheet1__STACK_ID}",
+            title: "Work Table",
+            content: "Work Table",
           }    
         });
 
@@ -649,7 +753,7 @@ form.example::after {
           outFields: ["*"],      
           popupTemplate: {
             // autocasts as new PopupTemplate()
-            title: "{Sheet1__DRAWER_ID}, {Sheet1__STACK_ID}",
+            title: "Square Wooden Table",
             content: "This is drawer {Sheet1__DRAWER_ID} in Cabinet {Sheet1__CAB_ID} in Stack {Sheet1__STACK_ID}",
           }    
         });
@@ -665,7 +769,7 @@ form.example::after {
           minScale: 0,     
           popupTemplate: {
             // autocasts as new PopupTemplate()
-            title: "{Sheet1__DRAWER_ID}, {Sheet1__STACK_ID}",
+            title: "Small Grey Table",
             content: "This is drawer {Sheet1__DRAWER_ID} in Cabinet {Sheet1__CAB_ID} in Stack {Sheet1__STACK_ID}",
           }    
         });
@@ -681,7 +785,7 @@ form.example::after {
           minScale: 0,  
           popupTemplate: {
             // autocasts as new PopupTemplate()
-            title: "{Sheet1__DRAWER_ID}, {Sheet1__STACK_ID}",
+            title: "Print Table",
             content: "This is drawer {Sheet1__DRAWER_ID} in Cabinet {Sheet1__CAB_ID} in Stack {Sheet1__STACK_ID}",
           }    
         });
@@ -718,6 +822,20 @@ form.example::after {
           }    
         });
 
+        // Large Table 4 Layer
+        var table4Layer = new SceneLayer({
+          url:
+            "https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/table43d/SceneServer/layers/0",
+          renderer: greyRenderer,
+          title: "Large Table 4",
+          outFields: ["*"],            
+          popupTemplate: {
+            // autocasts as new PopupTemplate()
+            title: "Large Table 4",
+            content: "Large Table 4",
+          }    
+        });
+
         // Large Table 3 Layer
         var table3Layer = new FeatureLayer({
           url:
@@ -747,6 +865,22 @@ form.example::after {
             // autocasts as new PopupTemplate()
             title: "Large Table 2",
             content: "Large Table 2",
+          }    
+        });
+
+        // Large Table 1 Layer
+        var table1Layer = new FeatureLayer({
+          url:
+            "https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/Large_Grey_Table_1/FeatureServer/0",
+          renderer: table3Renderer,
+          title: "Large Table 1",
+          outFields: ["*"], 
+          maxScale: 0,
+          minScale: 0,     
+          popupTemplate: {
+            // autocasts as new PopupTemplate()
+            title: "Large Table 1",
+            content: "Large Table 1",
           }    
         });
 
@@ -832,13 +966,39 @@ form.example::after {
           }    
         }); 
 
-        
+        // Bookcases Layer
+        var bookLayer = new FeatureLayer({
+          url:
+            "https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/Bookcases/FeatureServer/0",
+          renderer: bookRenderer,
+          title: "Bookcases",
+          outFields: ["*"],      
+          popupTemplate: {
+            // autocasts as new PopupTemplate()
+            title: "Bookcases",
+            content: "Bookcases",
+          }    
+        }); 
+
+        // Small wooden table Layer
+        var smallWoodTableLayer = new FeatureLayer({
+          url:
+            "https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/Small_Wooden_Table/FeatureServer/0",
+          renderer: smallWoodTableRenderer,
+          title: "Small Wooden Table",
+          outFields: ["*"],      
+          popupTemplate: {
+            // autocasts as new PopupTemplate()
+            title: "Small Wooden Table",
+            content: "Small Wooden Table",
+          }    
+        });                 
 
         var map = new Map({
           basemap: "dark-gray-vector",
           layers: [cabLayer, baseLayer, workTableLayer, tallCabLayer, woodTableLayer, greyTableLayer, printTableLayer,
-          scannerLayer, wallsLayer, table3Layer, table2Layer, boxLayer, frontDeskLayer, screensLayer, globeBaseLayer,
-          globeLayer, confTableLayer]
+          scannerLayer, wallsLayer, table4Layer, table3Layer, table2Layer, table1Layer, boxLayer, frontDeskLayer, screensLayer,
+          globeBaseLayer, globeLayer, confTableLayer, bookLayer, smallWoodTableLayer]
         });
 
         var view = new SceneView({
