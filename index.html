@@ -17,68 +17,77 @@
 
 
     <style>
-      html,
-      body,
+      
       #viewDiv {
+        position: absolute;
+        top: 0;
+        bottom: 0;        
         padding: 0;
-        margin: 0;
-        height: 100%;
+        margin-top: 56px;        
         width: 100%;
-      }
+      }   
 
-      * {
-  box-sizing: border-box;
+.navbar {
+  height: 56.5px;  
 }
 
-/* Style the search field */
-form.example input[type=text] {
-  padding: 10px;
-  font-size: 17px;
-  border: 1px solid grey;
-  float: left;
-  width: 40%;
-  background: #f1f1f1;
-  z-index: 999999;
-  position: absolute;
-  left: 70px;
-  top: 20px;
+.navbar-brand {
+  padding: 0 15px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
 }
 
-/* Style the submit button */
-form.example button {
-  position: absolute;
-  z-index: 999999;
-  top: 20px;
-  left: 620px;
-  float: left;
-  width: 5%;
-  padding: 14px;
-  background: #2196F3;
-  color: white;
-  font-size: 17px;
-  border: 1px solid grey;
-  border-left: none; /* Prevent double borders */
-  cursor: pointer;
+.bg-light {
+  background: #606060 !important;
+  border-bottom: solid 2px black;
+}        
+
+.container {
+    position: absolute;
+    top: 70px;
+    left: 50px;
 }
 
-form.example button:hover {
-  background: #0b7dda;
+.btn:hover {
+    color: #fff
 }
 
-/* Clear floats */
-form.example::after {
-  content: "";
-  clear: both;
-  display: table;
+.input-text:focus {
+    box-shadow: 0px 0px 0px;
+    border-color: #8c1d40;
+    outline: 0px
 }
+
+.form-control {
+    border: 1px solid  #8c1d40
+    z-index: 999999999;
+}
+
+.btn-outline-warning {
+  color: #fff;
+  border-color: #8c1d40;
+  background-color: #8c1d40;
+}
+
+.btn-outline-warning:hover {
+  color: #fff;
+  border-color: #D23153;
+  background-color: #D23153;
+}
+
+
     </style>
 
     <script>
-      require(["esri/Map", "esri/views/SceneView", "esri/layers/FeatureLayer", "esri/layers/SceneLayer"], function(
+      require(["esri/Map", "esri/views/SceneView", "esri/layers/FeatureLayer", "esri/layers/SceneLayer", "esri/widgets/Search"], function(
         Map,
         SceneView,
         FeatureLayer,
-        SceneLayer        
+        SceneLayer,
+        Search        
       ) {     
         // ** Styles for the 3D Layers ** //   
         // style for the Cabinets layer
@@ -941,14 +950,23 @@ form.example::after {
                   }
               });   
         });
-          
+
+
         
       }); // end of map JS
     </script>
   </head>
 
   <body>
+    <nav class="navbar navbar-light bg-light">
+  <a class="navbar-brand" href="#">
+    <img src="asulogo.png" width="50" height="50" class="d-inline-block align-top" alt="">
+    Map and Geospatial Hub
+  </a>
+</nav>
     <div id="viewDiv"></div>
+    <!-- Image and text -->
+
     <div class="modal" id="drawerModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
@@ -969,9 +987,19 @@ form.example::after {
     </div>
 </div>
 
-<form class="example">
+<!-- <form class="example">
   <input type="text" placeholder="Search.." name="search" id="search">
   <button type="button" id="submit"><i class="fa fa-search"></i></button>
-</form>
+</form> -->
+
+<div class="container justify-content-center">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="input-group mb-3"> <input type="text" class="form-control input-text" placeholder="Search maps..." aria-label="Recipient's username" aria-describedby="basic-addon2">
+                <div class="input-group-append"> <button class="btn btn-outline-warning btn-lg" type="button"><i class="fa fa-search"></i></button> </div>
+            </div>
+        </div>
+    </div>
+</div>
   </body>
 </html>
