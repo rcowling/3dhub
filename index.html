@@ -651,14 +651,14 @@
             // Get the Drawer_ID from the selected row in the table            
             var drawerId = row._row.data.attributes.Drawer_ID; 
             var query = cabLayer.createQuery();
-            query.where = "Sheet1__DRAWER_ID = '4'";
+            query.where = "Sheet1__DRAWER_ID =" + "'" + drawerId + "'";
             query.outFields = ["OBJECTID", "Sheet1__DRAWER_ID"];
 
 cabLayer.queryFeatures(query)
   .then(function(response){
      // returns a feature set with features containing the following attributes
      // STATE_NAME, COUNTY_NAME, POPULATION, POP_DENSITY
-     console.log(response.features.attributes.OBJECTID);
+     console.log(response.feature.attributes.OBJECTID);
    });
             view.whenLayerView(cabLayer).then(function(layerView) {
             var queryExtent = new Query({
