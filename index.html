@@ -658,11 +658,10 @@ cabLayer.queryFeatures(query)
   .then(function(response){
      // returns a feature set with features containing the following attributes
      // STATE_NAME, COUNTY_NAME, POPULATION, POP_DENSITY
-     console.log(response.feature.attributes.OBJECTID);
-   });
-            view.whenLayerView(cabLayer).then(function(layerView) {
+     var objectID = response.features[0].attributes.OBJECTID;
+     view.whenLayerView(cabLayer).then(function(layerView) {
             var queryExtent = new Query({
-              objectIds: [drawerId]
+              objectIds: [objectID]
             });
             cabLayer.queryExtent(queryExtent).then(function(result) {
               // zoom to the extent of the feature; we use the expand method as we don't want to zoom very close to it
@@ -674,8 +673,10 @@ cabLayer.queryFeatures(query)
               highlight.remove();
             }
             // highlight the feature with the returned objectId
-            highlight = layerView.highlight([drawerId]);
+            highlight = layerView.highlight([objectID]);
             })
+   });
+            
           },   
       });
         // ** 3D Map Layers for the Hub ** //
