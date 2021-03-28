@@ -928,7 +928,9 @@
             ],  
             // Detect when someone clicks on a row in the table
             rowClick:function(e, row){ 
-              view.popup.close();            
+              view.popup.close();   
+              // When the table row is clicked hide the table 
+              $('#drawerModal').modal('hide');        
               //e - the click event object
               //row - row component
               // Get the Drawer_ID from the selected row in the table            
@@ -937,11 +939,13 @@
               var query = cabLayer.createQuery();
               // Query the cabinets layer for the Drawer_ID
               query.where = "Sheet1__DRAWER_ID =" + "'" + drawerId + "'";
+              query.returnQueryGeometry = true; 
               query.outFields = ["OBJECTID", "Sheet1__DRAWER_ID"];
               cabLayer.queryFeatures(query)
                 .then(function(response){
                    // returns a feature set with features containing an OBJECTID
                    var objectID = response.features[0].attributes.OBJECTID;
+                   console.log(response);
                    view.whenLayerView(cabLayer).then(function(layerView) {
                       var queryExtent = new Query({
                         objectIds: [objectID]
@@ -958,6 +962,12 @@
                       // highlight the feature with the returned objectId
                       highlight = layerView.highlight([objectID]);
                       })
+                      // open a popup at the drawer location of the selected map
+                      view.popup.open({
+                        // Set the popup's title to the coordinates of the clicked location
+                        title: "The item " + row._row.data.attributes.Title + " is located in Drawer " + drawerId,
+                        location: response.features[0].geometry.centroid// Set the location of the popup to the clicked location
+                      });
                  });           
             },   
         });
@@ -1014,13 +1024,16 @@
                      console.log(data.features);
                      // Get the features from the REST API 
                      var searchRes = data.features;  
-                     $('#drawerModal').modal('show');  
+                     $('#drawerModal').modal('show'); 
+                     // Get the number of results of the search
+                     var numResults = data.features.length;    
+                     $('#results').html(numResults + " maps found for " + '"' + searchVal + '"');                  
                      // Create a new table with the array of features 
                      table.setData(searchRes);
                     }
             });  
-          } else if (typeVal == 'Call Number') {
-             // call to query the REST API using the value of the search
+          } else if (typeVal == 'Call Number') {            
+            // call to query the REST API using the value of the search
             $.ajax({
                     dataType: 'json',
                     url: 'https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/maps129/FeatureServer/0/query?where=Call_Number+%3D++%27' + searchVal + '%27&objectIds=&time=&resultType=none&outFields=*&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
@@ -1034,7 +1047,51 @@
                      table.setData(searchRes);
                     }
             });  
-          }        
+          } else if (typeVal == 'Date') {
+            // split the year range into two parts
+            var years = searchVal.split("-");
+            $.ajax({
+                    dataType: 'json',
+                    url: 'https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/maps129/FeatureServer/0/query?where=Publication_Date+%3E%3D+%27' + years[0] + '%27+AND+Publication_Date+%3C%3D+%27' + years[1] + '%27&objectIds=&time=&resultType=none&outFields=*&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
+                    type: "GET",    
+                    success: function(data) {
+                     console.log(data.features);
+                     // Get the features from the REST API 
+                     var searchRes = data.features;  
+                     $('#drawerModal').modal('show');  
+                     // Create a new table with the array of features 
+                     table.setData(searchRes);
+                    }
+            });  
+          } else if (typeVal == 'Location') {
+            $.ajax({
+                    dataType: 'json',
+                    url: 'https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/maps129/FeatureServer/0/query?where=Geo+LIKE+%27%25' + searchVal + '%25%27&objectIds=&time=&resultType=none&outFields=*&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
+                    type: "GET",    
+                    success: function(data) {
+                     console.log(data.features);
+                     // Get the features from the REST API 
+                     var searchRes = data.features;  
+                     $('#drawerModal').modal('show');  
+                     // Create a new table with the array of features 
+                     table.setData(searchRes);
+                    }
+            });  
+          } else if (typeVal == 'Theme') {
+            $.ajax({
+                    dataType: 'json',
+                    url: 'https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/maps129/FeatureServer/0/query?where=Theme+LIKE+%27%25' + searchVal + '%25%27&objectIds=&time=&resultType=none&outFields=*&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
+                    type: "GET",    
+                    success: function(data) {
+                     console.log(data.features);
+                     // Get the features from the REST API 
+                     var searchRes = data.features;  
+                     $('#drawerModal').modal('show');  
+                     // Create a new table with the array of features 
+                     table.setData(searchRes);
+                    }
+            });  
+          }      
         });
 
         // Code for the search dropdown menu
@@ -1042,15 +1099,28 @@
           // Get the value of the selected item
           var value = this.value;
           if (value == 'Keyword') {
-            //
-          } else if (value == 'Call_Number') {
-            //
+            $('#search').attr("placeholder", "Search maps...");
+          } else if (value == 'Call Number') {
+             $('#search').attr("placeholder", "Enter Call # (ie: G3300 1818 .H4 REF)");            
           } else if (value == 'Date') {
-            $('#yearModal').modal('show');
-
+            //$('#yearModal').modal('show');
+            $('#search').attr("placeholder", "Enter Year Range (Format: YYYY-YYYY)"); 
+          } else if (value == 'Location') {            
+            $('#search').attr("placeholder", "Search location (ie: Arizona)"); 
+          } else if (value == 'Theme') {            
+            $('#search').attr("placeholder", "Search by theme (ie: Land use)"); 
           }
-        });
-        
+        });      
+        // Custom Buttons
+        // Add element for the table button using Esri widgets
+        var tableBtn = document.createElement('div');
+        tableBtn.className = "esri-icon-table esri-widget--button esri-widget esri-interactive";
+        tableBtn.addEventListener('click', function(event){
+          // Toggle table
+          $('#drawerModal').modal('show');
+        })
+
+        view.ui.add(tableBtn, "top-left");  
       }); // end of map JS
     </script>
   </head>
@@ -1069,7 +1139,7 @@
     <div class="modal-dialog" role="document" style="position:absolute;bottom:0;margin:0;width:100%; max-width: none;">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title"><div id="drawerTitle"></div></h5>
+          <h5 class="modal-title"><div id="drawerTitle"><div id="results"></div></h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
