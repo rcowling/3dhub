@@ -99,6 +99,11 @@
   background-color: #D23153;
 }
 
+#close {
+  background-color: #8c1d40;
+  border-color: #8c1d40;
+}
+
 
     </style>
 
@@ -208,49 +213,9 @@
               ]
             }
           ]
-        };
+        };       
 
-        // style for the grey table  
-        var greyTableRenderer = {
-          type: "simple", // autocasts as new SimpleRenderer()
-          symbol: {
-            type: "polygon-3d", // autocasts as new PolygonSymbol3D()
-            symbolLayers: [{ type: "extrude" }] // autocasts as new ExtrudeSymbol3DLayer()
-          },
-          label: "Style for the grey table",
-          visualVariables: [
-            {
-              type: "size", // indicates this is a size visual variable
-              field: "Height", // height of the feature      
-              stops: [
-                {
-                  value: 0.22, // features meeting this value from height field
-                  size: 0.067056 // will be extruded by this height in meters
-                },
-                {
-                  value: 3, // features meeting this value from height field
-                  size: 0.9144 // will be extruded by this height in meters
-                }
-              ]
-            },
-            {
-              type: "color",
-              field: "Height",      
-              stops: [
-                {
-                  value: 0.22,
-                  color: "#686868"
-                },
-                {
-                  value: 3.0,
-                  color: "#686868"
-                }
-              ]
-            }
-          ]
-        };        
-
-         // style for the square wooden table  
+        // style for the square wooden table  
         var woodTableRenderer = {
           type: "simple", // autocasts as new SimpleRenderer()
           symbol: {
@@ -518,6 +483,24 @@
           }
         }; 
 
+        // style for the small grey table 
+        var smallGreyRenderer = {
+          type: "simple", // autocasts as new SimpleRenderer()
+          symbol: {
+            type: "mesh-3d", // autocasts as new MeshSymbol3D()
+            symbolLayers: [{
+              type: "fill", // autocasts as new FillSymbol3DLayer()
+              material: {
+                color: "#686868"
+              },
+              edges: {
+                type: "solid", // autocasts as new SolidEdges3D()
+                color: "#686868"
+              }
+            }]
+          }
+        }; 
+
         // style for the globe base 
         var globeBaseRenderer = {
           type: "simple", // autocasts as new SimpleRenderer()
@@ -612,19 +595,19 @@
           ]
         };
 
-      var highlight = null;  
+        // setup the variable for highlight with no value  
+        var highlight = null;  
       
         // ** 3D Map Layers for the Hub ** //
         var cabLayer = new FeatureLayer({
           url:
             "https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/Cabinets_join/FeatureServer/0",
           renderer: cabRenderer,
-          title: "Population living in poverty by county",
+          title: "Cabinets",
           outFields: ["*"],     
           popupTemplate: {
-            // autocasts as new PopupTemplate()
-            title: "{Sheet1__DRAWER_ID}, {Sheet1__STACK_ID}",
-            content: "This is drawer {Sheet1__DRAWER_ID} in Cabinet {Sheet1__CAB_ID} in Stack {Sheet1__STACK_ID}",
+            // autocasts as new PopupTemplate()            
+            title: "Drawer {Sheet1__DRAWER_ID}, Cabinet {Sheet1__CAB_ID}, Stack {Sheet1__STACK_ID}",
           }    
         });
         // Cabinets base layer
@@ -632,13 +615,8 @@
           url:
             "https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/Cabinets_Base/FeatureServer/0",
           renderer: cabBaseRenderer,
-          title: "Population living in poverty by county",
-          outFields: ["*"],      
-          popupTemplate: {
-            // autocasts as new PopupTemplate()
-            title: "{Sheet1__DRAWER_ID}, {Sheet1__STACK_ID}",
-            content: "This is drawer {Sheet1__DRAWER_ID} in Cabinet {Sheet1__CAB_ID} in Stack {Sheet1__STACK_ID}",
-          }    
+          title: "Cabinets Base",
+          outFields: ["*"]          
         });
         // Work Table Layer
         var workTableLayer = new FeatureLayer({
@@ -686,7 +664,7 @@
         var greyTableLayer = new SceneLayer({
           url:
             "https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/smallgreytable3d/SceneServer/layers/0",
-          renderer: greyTableRenderer,
+          renderer: smallGreyRenderer,
           title: "Small Grey Table",
           outFields: ["*"], 
           maxScale: 0,
@@ -882,19 +860,28 @@
           highlightOptions: {
             color: [210, 49, 83] // color of the highlight when a feature is selected
           }, 
-          map: map,
-          
+          map: map,          
           zoom: 21,
           camera: {
             position: {
-              latitude: 33.4193831,
-              longitude: -111.9343325,
-              z: 100
+              latitude: 33.41878190,
+              longitude: -111.93419602,
+              z: 26.78385
             },
-            tilt: 55,
-            heading: 0
+            tilt: 67.13,
+            heading: 338.63
           }
-        });
+        });       
+
+        view.popup.dockOptions = {
+          // Disable the dock button so users cannot undock the popup
+          buttonEnabled: false,
+          // Dock the popup when the size of the view is less than or equal to 600x1000 pixels
+          breakpoint: {
+            width: 10000,
+            height: 10000
+          }
+        };
 
         // Creates a  new table to hold our map attributes  
         var table = new Tabulator("#drawers-table", {          
@@ -934,17 +921,18 @@
               //e - the click event object
               //row - row component
               // Get the Drawer_ID from the selected row in the table            
-              var drawerId = row._row.data.attributes.Drawer_ID;  
+              var drawerId = row._row.data.attributes.Drawer_ID;               
               console.log('you clicked a row');         
               var query = cabLayer.createQuery();
               // Query the cabinets layer for the Drawer_ID
               query.where = "Sheet1__DRAWER_ID =" + "'" + drawerId + "'";
               query.returnQueryGeometry = true; 
-              query.outFields = ["OBJECTID", "Sheet1__DRAWER_ID"];
+              query.outFields = ["OBJECTID", "Sheet1__DRAWER_ID", "Sheet1__CAB_ID"];
               cabLayer.queryFeatures(query)
                 .then(function(response){
                    // returns a feature set with features containing an OBJECTID
                    var objectID = response.features[0].attributes.OBJECTID;
+                   var cabId = response.features[0].attributes.Sheet1__CAB_ID;
                    console.log(response);
                    view.whenLayerView(cabLayer).then(function(layerView) {
                       var queryExtent = new Query({
@@ -965,23 +953,24 @@
                       // open a popup at the drawer location of the selected map
                       view.popup.open({
                         // Set the popup's title to the coordinates of the clicked location
-                        title: "The item " + row._row.data.attributes.Title + " is located in Drawer " + drawerId,
+                        title: "The item " + '"' + row._row.data.attributes.Title + '"' + " is located in Drawer " + drawerId + " in cabinet " +
+                        cabId,
                         location: response.features[0].geometry.centroid// Set the location of the popup to the clicked location
                       });
                  });           
             },   
         });
 
-        view.on("click", function(event) {
+        view.on("click", function(event) { 
           // if any, remove the previous highlights
-            if (highlight) {
-              highlight.remove();
-            }
+          if (highlight) {
+            highlight.remove();
+          }
           // only include graphics from hurricanesLayer in the hitTest
           const opts = {
             include: cabLayer
           }
-          view.hitTest(event, opts).then(function(response) {
+          view.hitTest(event, opts).then(function(response) {            
             // check if a feature is returned from the cabLayer
             if (response.results.length) {
               const graphic = response.results[0].graphic;
@@ -997,12 +986,22 @@
                       url: 'https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/maps129/FeatureServer/0/query?where=Drawer_ID+%3D+' + drawerId + '&objectIds=&time=&resultType=none&outFields=*&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
                       type: "GET",    
                       success: function(data) {
-                       console.log(data.features);
-                       // Get the features from the REST API 
-                       var features = data.features;  
-                       $('#drawerModal').modal('show');  
-                       // Create a new table with the array of features 
-                       table.setData(features);
+                       if (data.features.length <= 0) {
+                         $('#noDataModal').modal('show');
+                       } else {
+                         // show the cabinet info div
+                         $("#drawerTitle").show(); 
+                         console.log(data.features);
+                         // Get the features from the REST API 
+                         var features = data.features;  
+                         $('#drawerModal').modal('show');
+                         var numResults = data.features.length;
+                         $('#results').html("Map count: " + numResults + " maps");  
+                         // Create a new table with the array of features 
+                         table.setData(features);
+                         // Show the icon to get the table back
+                         $(".esri-icon-table").show();
+                       }
                       }
               });   
             }
@@ -1021,6 +1020,8 @@
                     url: 'https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/maps129/FeatureServer/0/query?where=Title+LIKE+%27%25' + searchVal + '%25%27&objectIds=&time=&resultType=none&outFields=*&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
                     type: "GET",    
                     success: function(data) {
+                     // hide the cabinet info div
+                     $("#drawerTitle").hide(); 
                      console.log(data.features);
                      // Get the features from the REST API 
                      var searchRes = data.features;  
@@ -1039,10 +1040,14 @@
                     url: 'https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/maps129/FeatureServer/0/query?where=Call_Number+%3D++%27' + searchVal + '%27&objectIds=&time=&resultType=none&outFields=*&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
                     type: "GET",    
                     success: function(data) {
+                     // hide the cabinet info div
+                     $("#drawerTitle").hide();  
                      console.log(data.features);
                      // Get the features from the REST API 
                      var searchRes = data.features;  
                      $('#drawerModal').modal('show');  
+                     var numResults = data.features.length;    
+                     $('#results').html(numResults + " maps found for " + '"' + searchVal + '"');
                      // Create a new table with the array of features 
                      table.setData(searchRes);
                     }
@@ -1055,10 +1060,14 @@
                     url: 'https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/maps129/FeatureServer/0/query?where=Publication_Date+%3E%3D+%27' + years[0] + '%27+AND+Publication_Date+%3C%3D+%27' + years[1] + '%27&objectIds=&time=&resultType=none&outFields=*&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
                     type: "GET",    
                     success: function(data) {
+                     // hide the cabinet info div
+                     $("#drawerTitle").hide();  
                      console.log(data.features);
                      // Get the features from the REST API 
                      var searchRes = data.features;  
                      $('#drawerModal').modal('show');  
+                     var numResults = data.features.length;    
+                     $('#results').html(numResults + " maps found for " + '"' + searchVal + '"');
                      // Create a new table with the array of features 
                      table.setData(searchRes);
                     }
@@ -1069,10 +1078,14 @@
                     url: 'https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/maps129/FeatureServer/0/query?where=Geo+LIKE+%27%25' + searchVal + '%25%27&objectIds=&time=&resultType=none&outFields=*&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
                     type: "GET",    
                     success: function(data) {
+                     // hide the cabinet info div
+                     $("#drawerTitle").hide();  
                      console.log(data.features);
                      // Get the features from the REST API 
                      var searchRes = data.features;  
                      $('#drawerModal').modal('show');  
+                     var numResults = data.features.length;    
+                     $('#results').html(numResults + " maps found for " + '"' + searchVal + '"');
                      // Create a new table with the array of features 
                      table.setData(searchRes);
                     }
@@ -1083,10 +1096,14 @@
                     url: 'https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/maps129/FeatureServer/0/query?where=Theme+LIKE+%27%25' + searchVal + '%25%27&objectIds=&time=&resultType=none&outFields=*&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
                     type: "GET",    
                     success: function(data) {
+                     // hide the cabinet info div
+                     $("#drawerTitle").hide();  
                      console.log(data.features);
                      // Get the features from the REST API 
                      var searchRes = data.features;  
-                     $('#drawerModal').modal('show');  
+                     $('#drawerModal').modal('show');
+                     var numResults = data.features.length;    
+                     $('#results').html(numResults + " maps found for " + '"' + searchVal + '"');  
                      // Create a new table with the array of features 
                      table.setData(searchRes);
                     }
@@ -1120,7 +1137,11 @@
           $('#drawerModal').modal('show');
         })
 
-        view.ui.add(tableBtn, "top-left");  
+        // Add the button to the UI
+        view.ui.add(tableBtn, "top-left"); 
+        // Hide the button by default  
+        $(".esri-icon-table").hide();
+
       }); // end of map JS
     </script>
   </head>
@@ -1139,7 +1160,7 @@
     <div class="modal-dialog" role="document" style="position:absolute;bottom:0;margin:0;width:100%; max-width: none;">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title"><div id="drawerTitle"><div id="results"></div></h5>
+          <h5 class="modal-title"><div id="drawerTitle"></div><div id="results"></div></h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -1182,6 +1203,25 @@
   </div>
 </div>
 
+<div class="modal" tabindex="-1" role="dialog" id="noDataModal">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Drawer Missing Data</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Opps. It looks like we don't have any data available at the moment for this drawer. We are working hard to inventory our maps.
+        Please check back soon or visit the Map and Geospatial Hub to view our map collections.</p>        
+      </div>
+      <div class="modal-footer">        
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" id="close">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 <select class="form-control" id="searchtype">
   <option>Keyword</option>
   <option>Call Number</option>
