@@ -953,7 +953,7 @@
                       // open a popup at the drawer location of the selected map
                       view.popup.open({
                         // Set the popup's title to the coordinates of the clicked location
-                        title: "The item " + '"' + row._row.data.attributes.Title + '"' + " is located in Drawer " + drawerId + " in cabinet " +
+                        title: "The item " + '"' + row._row.data.attributes.Title + '"' + " is located in Drawer " + drawerId + " of cabinet " +
                         cabId,
                         location: response.features[0].geometry.centroid// Set the location of the popup to the clicked location
                       });
@@ -1009,6 +1009,7 @@
         });
         // Code for the search bar functions
         $( "#submit" ).click(function() {
+          $(".esri-icon-table").show();
           // get the value of the search box
           var searchVal = $( "#search" ).val();
           // get the value of the search type dropdwn
