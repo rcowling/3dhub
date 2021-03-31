@@ -1022,7 +1022,7 @@
             // call to query the REST API using the value of the search
             $.ajax({
                     dataType: 'json',
-                    url: 'https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/maps129/FeatureServer/0/query?where=Title+LIKE+%27%25' + searchVal + '%25%27&objectIds=&time=&resultType=none&outFields=*&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
+                    url: 'https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/maps129/FeatureServer/0/query?where=Title+LIKE+%27%25' + searchVal + '%25%27+OR+Theme+LIKE+%27%25' +searchVal + '%25%27+OR+Geo+LIKE+%27%25' + searchVal +'%25%27+OR+Publication_Date+LIKE+%27%25' + searchVal + '%25%27+OR+Publisher+LIKE+%27%25' + searchVal + '%25%27+OR+Author+LIKE+%27%25' + searchVal + '%25%27+OR+Scale+LIKE+%27%25' + searchVal + '%25%27+OR+Language+LIKE+%27%25' + searchVal + '%25%27&objectIds=&time=&resultType=none&outFields=*&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
                     type: "GET",    
                     success: function(data) {
                      // hide the cabinet info div
@@ -1042,7 +1042,7 @@
             // call to query the REST API using the value of the search
             $.ajax({
                     dataType: 'json',
-                    url: 'https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/maps129/FeatureServer/0/query?where=Call_Number+%3D++%27' + searchVal + '%27&objectIds=&time=&resultType=none&outFields=*&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
+                    url: 'https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/maps129/FeatureServer/0/query?where=Call_Number+LIKE+%27%25' + searchVal + '%25%27&objectIds=&time=&resultType=none&outFields=*&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
                     type: "GET",    
                     success: function(data) {
                      // hide the cabinet info div
