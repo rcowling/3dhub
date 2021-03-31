@@ -351,7 +351,7 @@
           }
         }        
 
-        // style for the GeoSandBox  
+        /*// style for the GeoSandBox  
         var boxRenderer = {
           type: "simple", // autocasts as new SimpleRenderer()
           symbol: {
@@ -397,7 +397,7 @@
               ]
             }
           ]
-        };
+        };*/
 
          // style for the Bookcases  
         var bookRenderer = {
@@ -738,7 +738,8 @@
           }    
         });       
 
-        // geosandbox Layer
+        /*// geosandbox Layer
+        // comment this out might use it later
         var boxLayer = new FeatureLayer({
           url:
             "https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/geosandbox/FeatureServer/0",
@@ -750,7 +751,7 @@
             title: "Large Table 2",
             content: "Large Table 2",
           }    
-        });
+        });*/
 
         // Front Desk Layer
         var frontDeskLayer = new FeatureLayer({
@@ -851,7 +852,7 @@
         var map = new Map({
           basemap: "dark-gray-vector",
           layers: [cabLayer, baseLayer, workTableLayer, tallCabLayer, woodTableLayer, greyTableLayer, printTableLayer,
-          scannerLayer, wallsLayer, greyTablesLayer, boxLayer, frontDeskLayer, screensLayer,
+          scannerLayer, wallsLayer, greyTablesLayer, frontDeskLayer, screensLayer,
           globeBaseLayer, globeLayer, confTableLayer, bookLayer, smallWoodTableLayer]
         });
 
@@ -953,8 +954,7 @@
                       // open a popup at the drawer location of the selected map
                       view.popup.open({
                         // Set the popup's title to the coordinates of the clicked location
-                        title: "The item " + '"' + row._row.data.attributes.Title + '"' + " is located in Drawer " + drawerId + " of cabinet " +
-                        cabId,
+                        title: "The item " + '"' + row._row.data.attributes.Title + '"' + " is located in Drawer " + drawerId + ".",
                         location: response.features[0].geometry.centroid// Set the location of the popup to the clicked location
                       });
                  });           
@@ -978,7 +978,7 @@
               var drawerId = graphic.attributes.Sheet1__DRAWER_ID;
               var drawerTitle = graphic.attributes.Sheet1__DRAWER_TITLE; 
               var cabId = graphic.attributes.Sheet1__CAB_ID;
-              $('#drawerTitle').html("Drawer " + drawerId + ": " + drawerTitle + " (Cabinet: " + cabId + ")");
+              $('#drawerTitle').html("Drawer " + drawerId + ": " + drawerTitle);
               console.log(drawerId);
               // Call to the ArcGIS REST API to retreive the maps in each drawer
               $.ajax({
@@ -996,6 +996,10 @@
                          var features = data.features;  
                          $('#drawerModal').modal('show');
                          var numResults = data.features.length;
+                         cabLayer.popupTemplate = {
+                            title: "Drawer: " + drawerId + " (" + drawerTitle + ")",
+                            content: "Map count: " + numResults
+                         };
                          $('#results').html("Map count: " + numResults + " maps");  
                          // Create a new table with the array of features 
                          table.setData(features);
