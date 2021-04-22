@@ -1308,6 +1308,26 @@
           }      
         });
 
+        // Actions for the popup
+var tableViewerAction = {
+  // This text is displayed as a tooltip
+  title: "View table",
+  // The ID by which to reference the action in the event handler
+  id: "view-table",
+  // Sets the icon font used to style the action button
+  className: "esri-icon-table"
+};
+// Adds the custom action to the popup.
+view.popup.actions.push(tableViewerAction);
+
+// This event fires for each click on any action
+view.popup.on("trigger-action", function(event){
+  // If the view image action is clicked, fire the viewImage() function
+  if(event.action.id === "view-table"){
+    viewImage();
+  }
+});
+
         // check if the years are valid numbers
         $('#startYear').change(function() {
           $(this).val($(this).val().match(/\d*\.?\d+/));

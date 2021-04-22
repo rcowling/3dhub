@@ -114,6 +114,10 @@
   left: 0;        
 }
 
+.navbar-light .navbar-brand:hover {
+  color: #8C1D40;      
+}
+
 #advancedBtn {
   background-color: #8c1d40;
   border-color: #8c1d40;
@@ -178,7 +182,7 @@
           }
         });       
 
-        view.popup.dockOptions = {
+       /* view.popup.dockOptions = {
           // Disable the dock button so users cannot undock the popup
           buttonEnabled: false,
           // Dock the popup when the size of the view is less than or equal to 600x1000 pixels
@@ -186,7 +190,7 @@
             width: 10000,
             height: 10000
           }
-        };
+        };*/
 
         // Creates a  new table to hold our map attributes  
         var table = new Tabulator("#drawers-table", {             
@@ -228,7 +232,7 @@
                 .then(function(response){
                    // returns a feature set with features containing an OBJECTID
                    var objectID = response.features[0].attributes.OBJECTID;
-                   var cabId = response.features[0].attributes.Sheet1__CAB_ID;
+                   var cabId = response.features[0].attributes.CAB_ID;
                    console.log(response);
                    view.whenLayerView(cabLayer).then(function(layerView) {
                       var queryExtent = new Query({
@@ -236,7 +240,7 @@
                       });
                       cabLayer.queryExtent(queryExtent).then(function(result) {
                         // zoom to the extent of the feature; we use the expand method as we don't want to zoom very close to it
-                        view.goTo(result.extent.expand(7), { speedFactor: 0.5 });
+                        //view.goTo(result.extent.expand(7), { speedFactor: 0.5 });
                       });
                       
                       // if any, remove the previous highlights
@@ -249,7 +253,8 @@
                       // open a popup at the drawer location of the selected map
                       view.popup.open({
                         // Set the popup's title to the coordinates of the clicked location
-                        title: "The item " + '"' + row._row.data.attributes.Title + '"' + " is located in Drawer " + drawerId + ".",         
+                        title: "The item " + '"' + row._row.data.attributes.Title + '"' + " is located in Drawer " + drawerId + ".", 
+                        location: response.features[0].geometry.centroid// Set the location of the popup to the clicked location        
                       });
                  });           
             },   
@@ -296,23 +301,23 @@
                             success: function(data) {
                              if (data.features.length <= 0) {
                                $('#noDataModal').modal('show');
+                               view.popup.close();
                              } else {
                                // show the cabinet info div
                                $("#drawerTitle").show(); 
                                console.log(data.features);
                                // Get the features from the REST API 
-                               var features = data.features;  
-                               $('#drawerModal').modal('show');
+                               var features = data.features;     
+                               //$('#drawerModal').modal('show');                            
                                var numResults = data.features.length;
                                cabLayer.popupTemplate = {
                                   title: "Drawer: " + drawerId + " (" + drawerTitle + ")",
-                                  content: "Map count: " + numResults
+                                  content: "Map count: " + numResults,
+                                  actions: [tableViewerAction] // adds the custom popup action
                                };
                                $('#results').html("Map count: " + numResults + " maps");  
                                // Create a new table with the array of features 
-                               table.setData(features);
-                               // Show the icon to get the table back
-                               $(".esri-icon-table").show();
+                               table.setData(features);  
                              }
                             }
                     });   
@@ -324,6 +329,7 @@
 
         // Code for the search bar functions
         $( "#submit" ).click(function() {
+          view.popup.close();
           $(".esri-icon-table").show();
           // get the value of the search box
           var searchVal = $( "#search" ).val();
@@ -455,15 +461,22 @@
           });       
 
         // Function to rotate the map
-        function rotate() {
-          if (!view.interacting) {
-            view.goTo({
-                heading: view.camera.heading + 0.2,
-                center: view.center
-            }, {animate: false});
-            requestAnimationFrame(rotate);
-          }
-        }    
+        function rotate() {         
+          view.goTo({
+              heading: view.camera.heading + 0.2,
+              center: view.center
+          }, {animate: false});
+          // begin the rotation
+          var req = requestAnimationFrame(rotate);            
+          // when the user clicks on the pause button
+          pauseBtn.addEventListener('click', function(event){  
+            // cancel the rotation
+            cancelAnimationFrame(req);
+            $(".esri-icon-play").show(); 
+            $(".esri-icon-pause").hide();     
+          })
+        };    
+
         // Custom Buttons
         // Add element for the table button using Esri widgets
         var tableBtn = document.createElement('div');
@@ -477,7 +490,7 @@
         // Add the button to the UI
         view.ui.add(tableBtn, "top-left"); 
         // Hide the button by default  
-        $(".esri-icon-table").hide();
+        $(".esri-icon-table").hide();        
         // If the advanced search is closed, change the search value back to Keyword
         $('#advancedModal').on('hidden.bs.modal', function (e) {
           $('#searchtype')
@@ -485,20 +498,32 @@
             .trigger('change');
         })
 
-        // Rotate button
-        var rotateBtn = document.createElement('div');
+        // Rotate play button
+        var rotateBtn = document.createElement('div');        
         rotateBtn.className = "esri-icon-play esri-widget--button esri-widget esri-interactive";
-        rotateBtn.title = "Auto-Rotate Map";
+        rotateBtn.title = "Auto-rotate map";
         rotateBtn.addEventListener('click', function(event){
-          // Rotate Map
           rotate();
+          $(".esri-icon-play").hide();
+          $(".esri-icon-pause").show();         
         })
 
         // Add the button to the UI
-        view.ui.add(rotateBtn, "top-left"); 
+        view.ui.add(rotateBtn, "top-left");
+
+        // Pause button
+        var pauseBtn = document.createElement('div');
+        pauseBtn.className = "esri-icon-pause esri-widget--button esri-widget esri-interactive";
+        pauseBtn.title = "Pause rotation";
+
+        // Add the button to the UI
+        view.ui.add(pauseBtn, "top-left"); 
+
+        $(".esri-icon-pause").hide();
 
         // when someone clicks the advanced search submit button        
         $("#advancedBtn").click(function(){
+          view.popup.close();
           // create an empty array for search strings
           var searchStrings = [];
           // get the values of the boxes from the advacned search modal
@@ -572,6 +597,26 @@
         $('#endYear').change(function() {
           $(this).val($(this).val().match(/\d*\.?\d+/));
         });
+
+        // Popup Actions
+        var tableViewerAction = {
+          // This text is displayed as a tooltip
+          title: "View table",
+          // The ID by which to reference the action in the event handler
+          id: "view-table",
+          // Sets the icon font used to style the action button
+          className: "esri-icon-table"
+        };        
+
+        // This event fires for each click on any action
+        view.popup.on("trigger-action", function(event){
+          // If the view image action is clicked, open the table modal
+          if(event.action.id === "view-table"){
+            $('#drawerModal').modal('show');
+            table.redraw(true);
+          }
+        });
+
         
       }); // end of map JS
     </script>
