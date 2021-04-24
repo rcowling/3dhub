@@ -42,8 +42,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;  
-  
+  font-size: 20px;   
+}
+
+.navbar-light .navbar-nav .nav-link {
+  color: #EEEEEE;
+  font-size: 12px;
+}
+
+.navbar-light .navbar-nav .nav-link:hover {
+  color: #8C1D40;  
 }
 
 #search {
@@ -139,18 +147,24 @@
   z-index: -1;
 }
 
+.esri-widget {
+  font-family: 'Montserrat', sans-serif;
+}
+
 
 
 
     </style>
 
     <script>
-      require(["esri/Map", "esri/views/SceneView", "esri/WebScene", "esri/layers/SceneLayer", "esri/tasks/support/Query"], function(
+      require(["esri/Map", "esri/views/SceneView", "esri/WebScene", "esri/layers/SceneLayer", "esri/tasks/support/Query",
+        "esri/widgets/Home"], function(
         Map,
         SceneView,
         WebScene,
         SceneLayer,
-        Query       
+        Query,
+        Home      
       ) {           
 
         // setup the variable for highlight with no value  
@@ -170,8 +184,8 @@
             color: [210, 49, 83] // color of the highlight when a feature is selected
           }, 
           map: webscene,          
-          zoom: 21,
-          camera: {
+          //zoom: 21,
+          /*camera: {
             position: {
               latitude: 33.41905660,
               longitude: -111.93427050,
@@ -179,8 +193,10 @@
             },
             tilt: 67.13,
             heading: 338.63
-          }
-        });       
+          }*/
+        });  
+
+        
 
        /* view.popup.dockOptions = {
           // Disable the dock button so users cannot undock the popup
@@ -458,7 +474,8 @@
                       langSelect.appendChild(langOpt);                                         
                     });                     
                   }
-          });       
+          });    
+
 
         // Function to rotate the map
         function rotate() {         
@@ -478,6 +495,13 @@
         };    
 
         // Custom Buttons
+         var homeBtn = new Home({
+          view: view
+        });
+
+        // Add the home button to the top left corner of the view
+        view.ui.add(homeBtn, "top-left");
+        
         // Add element for the table button using Esri widgets
         var tableBtn = document.createElement('div');
         tableBtn.className = "esri-icon-table esri-widget--button esri-widget esri-interactive";
@@ -616,18 +640,29 @@
             table.redraw(true);
           }
         });
-
         
       }); // end of map JS
     </script>
   </head>
 
   <body>
-    <nav class="navbar navbar-light bg-light">
+    <nav class="navbar navbar-expand-md navbar-light bg-light">
   <a class="navbar-brand" href="https://geospatial.asu.edu/">
     <img src="asulogo.png" width="50" height="50" class="d-inline-block align-top" alt="">
       &nbsp;Map and Geospatial Hub | Collections & Resources 3D Explorer
   </a>
+  <div class="collapse navbar-collapse" id="navbarNav" style="">
+        <ul class="navbar-nav mr-auto">           
+        </ul>
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" href="https://lib.asu.edu/geo">Map and Geospatial Hub</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="https://lib.asu.edu/geo/services">Submit a Service Request</a>
+            </li>
+        </ul>
+    </div>
 </nav>
     <div id="viewDiv"></div>
     <!-- Image and text -->
@@ -724,7 +759,7 @@
         </button>
       </div>
       <div class="modal-body">
-        <p>Opps. It looks like we don't have any data available at the moment for this drawer. We are working hard to inventory our maps.
+        <p>Oops. It looks like we don't have any data available at the moment for this drawer. We are working hard to inventory our maps.
         Please check back soon or visit the Map and Geospatial Hub to view our map collections.</p>        
       </div>
       <div class="modal-footer">        

@@ -1191,10 +1191,28 @@
                     });                     
                   }
           });         
+        // Function to rotate the map
+        function rotate() {         
+          view.goTo({
+              heading: view.camera.heading + 0.2,
+              center: view.center
+          }, {animate: false});
+          // begin the rotation
+          var req = requestAnimationFrame(rotate);            
+          // when the user clicks on the pause button
+          pauseBtn.addEventListener('click', function(event){  
+            // cancel the rotation
+            cancelAnimationFrame(req);
+            $(".esri-icon-play").show(); 
+            $(".esri-icon-pause").hide();     
+          })
+        };    
+
         // Custom Buttons
         // Add element for the table button using Esri widgets
         var tableBtn = document.createElement('div');
         tableBtn.className = "esri-icon-table esri-widget--button esri-widget esri-interactive";
+        tableBtn.title = "Open Table";
         tableBtn.addEventListener('click', function(event){
           // Toggle table
           $('#drawerModal').modal('show');
@@ -1203,13 +1221,80 @@
         // Add the button to the UI
         view.ui.add(tableBtn, "top-left"); 
         // Hide the button by default  
-        $(".esri-icon-table").hide();
+        $(".esri-icon-table").hide();        
         // If the advanced search is closed, change the search value back to Keyword
         $('#advancedModal').on('hidden.bs.modal', function (e) {
           $('#searchtype')
             .val('Keyword')
             .trigger('change');
         })
+
+        // Rotate play button
+        var rotateBtn = document.createElement('div');        
+        rotateBtn.className = "esri-icon-play esri-widget--button esri-widget esri-interactive";
+        rotateBtn.title = "Auto-rotate map";
+        rotateBtn.addEventListener('click', function(event){
+          rotate();
+          $(".esri-icon-play").hide();
+          $(".esri-icon-pause").show();         
+        })
+
+        // Add the button to the UI
+        view.ui.add(rotateBtn, "top-left");
+
+        // Pause button
+        var pauseBtn = document.createElement('div');
+        pauseBtn.className = "esri-icon-pause esri-widget--button esri-widget esri-interactive";
+        pauseBtn.title = "Pause rotation";
+
+        // Add the button to the UI
+        view.ui.add(pauseBtn, "top-left"); 
+
+        $(".esri-icon-pause").hide();
+        $('#advancedModal').on('hidden.bs.modal', function (e) {
+          $('#searchtype')
+            .val('Keyword')
+            .trigger('change');
+        })
+
+        view.when(function() {
+        limitMapExtent(view);
+      });
+
+
+      function limitMapExtent(view) {
+        var initialExtent = view.extent;
+        view.watch('stationary', function(event) {
+          if (!event) {
+            return;
+          }
+          //If the map has moved to the point where it's center is
+          //outside the initial boundaries, then move it back to the
+          //edge where it moved out
+          var currentCenter = view.extent.center;
+          if (!initialExtent.contains(currentCenter)) {
+
+            var newCenter = view.extent.center;
+
+            //check each side of the initial extent and if the
+            //current center is outside that extent,
+            //set the new center to be on the edge that it went out on
+            if (currentCenter.x < initialExtent.xmin) {
+              newCenter.x = initialExtent.xmin;
+            }
+            if (currentCenter.x > initialExtent.xmax) {
+              newCenter.x = initialExtent.xmax;
+            }
+            if (currentCenter.y < initialExtent.ymin) {
+              newCenter.y = initialExtent.ymin;
+            }
+            if (currentCenter.y > initialExtent.ymax) {
+              newCenter.y = initialExtent.ymax;
+            }
+            view.goTo(newCenter);
+          }
+        });
+      }
 
         // when someone clicks the advanced search submit button        
         $("#advancedBtn").click(function(){
