@@ -42,12 +42,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;  
-  
+  font-size: 20px;   
+}
+
+.navbar-light .navbar-nav .nav-link {
+  color: #EEEEEE;
+  font-size: 13px;
+}
+
+.navbar-light .navbar-nav .nav-link:hover {
+  color: #8C1D40;  
 }
 
 #search {
   width: 50%;
+  border-radius: 5px 0px 0px 5px;
 }
 
 #searchtype {  
@@ -73,7 +82,7 @@
 .container {
     position: absolute;
     width: 60%;
-    top: 70px;
+    top: 71px;
     left: 45px;
 }
 
@@ -114,6 +123,10 @@
   left: 0;        
 }
 
+.navbar-light .navbar-brand:hover {
+  color: #8C1D40;      
+}
+
 #advancedBtn {
   background-color: #8c1d40;
   border-color: #8c1d40;
@@ -131,22 +144,23 @@
   border-color: #8c1d40;  
 }
 
-.modal-backdrop {
-  z-index: -1;
+
+
+.esri-widget {
+  font-family: 'Montserrat', sans-serif;
 }
-
-
-
-
     </style>
 
     <script>
-      require(["esri/Map", "esri/views/SceneView", "esri/WebScene", "esri/layers/SceneLayer", "esri/tasks/support/Query"], function(
+      require(["esri/Map", "esri/views/SceneView", "esri/WebScene", "esri/layers/SceneLayer", "esri/tasks/support/Query",
+        "esri/widgets/Home", "esri/geometry/Extent"], function(
         Map,
         SceneView,
         WebScene,
         SceneLayer,
-        Query       
+        Query,
+        Home,
+        Extent      
       ) {           
 
         // setup the variable for highlight with no value  
@@ -166,8 +180,8 @@
             color: [210, 49, 83] // color of the highlight when a feature is selected
           }, 
           map: webscene,          
-          zoom: 21,
-          camera: {
+          //zoom: 21,
+          /*camera: {
             position: {
               latitude: 33.41905660,
               longitude: -111.93427050,
@@ -175,9 +189,25 @@
             },
             tilt: 67.13,
             heading: 338.63
-          }
-        });       
+          }*/
+        });    
 
+       /* view.constraints = {
+          geometry: {            // Constrain lateral movement to Lower Manhattan
+            type: "extent",
+            xmin: -111.9345778519999,
+            ymin:  33.41921250900003,
+            xmax: -111.93427068599996,
+            ymax:  33.419464501000036,
+            zmin: 8.055864,
+            zmax: 10.646664
+          },
+          minScale: 500000,      // User cannot zoom out beyond a scale of 1:500,000
+          maxScale: 0,           // User can overzoom tiles
+          rotationEnabled: true // Disables map rotation
+        };    */
+
+        // Dock the popup to a fixed position
         view.popup.dockOptions = {
           // Disable the dock button so users cannot undock the popup
           buttonEnabled: false,
@@ -187,7 +217,6 @@
             height: 10000
           }
         };
-
         // Creates a  new table to hold our map attributes  
         var table = new Tabulator("#drawers-table", {             
             height: 250,          
@@ -217,26 +246,38 @@
               console.log('you clicked a row'); 
               // Get the cabinets layer from webScene
               var cabLayer = webscene.allLayers.filter(function(elem) {
-                return elem.title === "Map_Cabinets";
+                return elem.title === "Map Cabinets";
               }).items[0];        
               var query = cabLayer.createQuery();
               // Query the cabinets layer for the Drawer_ID
               query.where = "DRAWER_ID =" + "'" + drawerId + "'";
-              query.returnQueryGeometry = true; 
-              query.outFields = ["OBJECTID", "DRAWER_ID", "CAB_ID"];
+              query.returnGeometry = true;               
+              query.returnZ = true;
+              query.outFields = ["OBJECTID", "DRAWER_ID", "CAB_ID", "Z_Min", "Z_Max"];
               cabLayer.queryFeatures(query)
                 .then(function(response){
                    // returns a feature set with features containing an OBJECTID
                    var objectID = response.features[0].attributes.OBJECTID;
-                   var cabId = response.features[0].attributes.Sheet1__CAB_ID;
-                   console.log(response);
+                   var cabId = response.features[0].attributes.CAB_ID;
+                   var zmin = (response.features[0].attributes.Z_Min/3.28);
+                   var zmax = (response.features[0].attributes.Z_Max/3.28);
+                  
                    view.whenLayerView(cabLayer).then(function(layerView) {
                       var queryExtent = new Query({
                         objectIds: [objectID]
                       });
+                      // zoom to the extent of drawer that is clicked on the table  
+                      var new_ext = new Extent({
+                        xmin: response.features[0].geometry.extent.xmin, 
+                        ymin: response.features[0].geometry.extent.ymin, 
+                        zmin: zmin,
+                        xmax: response.features[0].geometry.extent.xmax, 
+                        ymax: response.features[0].geometry.extent.ymax,
+                        zmax: zmax,                        
+                        spatialReference: { wkid: 4326 }
+                      });
                       cabLayer.queryExtent(queryExtent).then(function(result) {
-                        // zoom to the extent of the feature; we use the expand method as we don't want to zoom very close to it
-                        view.goTo(result.extent.expand(7), { speedFactor: 0.5 });
+                        view.goTo(new_ext.expand(3), { speedFactor: 0.5 });                        
                       });
                       
                       // if any, remove the previous highlights
@@ -249,7 +290,8 @@
                       // open a popup at the drawer location of the selected map
                       view.popup.open({
                         // Set the popup's title to the coordinates of the clicked location
-                        title: "The item " + '"' + row._row.data.attributes.Title + '"' + " is located in Drawer " + drawerId + ".",         
+                        title: "The item " + '"' + row._row.data.attributes.Title + '" ' + "is located in Drawer " + drawerId + ".", 
+                        location: response.features[0].geometry.centroid// Set the location of the popup to the clicked location        
                       });
                  });           
             },   
@@ -263,7 +305,7 @@
         view.when(function() {
           // Get the cabinets layer from webScene
           var cabLayer = webscene.allLayers.filter(function(elem) {
-            return elem.title === "Map_Cabinets";
+            return elem.title === "Map Cabinets";
           }).items[0];
           // get the DRAWER_ID and DRAWER_TITLE  
           cabLayer.outFields = ['DRAWER_ID', 'DRAWER_TITLE'];
@@ -280,6 +322,7 @@
                 view.hitTest(event, { include: [cabLayer] }).then(function(response) {            
                   // check if a feature is returned from the cabLayer
                   if (response.results.length) {
+                    $(".esri-icon-table").hide();
                     const graphic = response.results[0].graphic;
                     console.log(graphic.attributes);
                     // Get the Drawer_ID of the clicked drawer
@@ -295,24 +338,28 @@
                             type: "GET",    
                             success: function(data) {
                              if (data.features.length <= 0) {
-                               $('#noDataModal').modal('show');
+                              cabLayer.popupTemplate = {
+                                  title: "Drawer: " + drawerId + " (" + drawerTitle + ")",
+                                  content: "Inventory coming soon!"                                 
+                               };
+                               //$('#noDataModal').modal('show');
+                               //view.popup.close();
                              } else {
                                // show the cabinet info div
                                $("#drawerTitle").show(); 
                                console.log(data.features);
                                // Get the features from the REST API 
-                               var features = data.features;  
-                               $('#drawerModal').modal('show');
+                               var features = data.features;     
+                               //$('#drawerModal').modal('show');                            
                                var numResults = data.features.length;
                                cabLayer.popupTemplate = {
                                   title: "Drawer: " + drawerId + " (" + drawerTitle + ")",
-                                  content: "Map count: " + numResults
+                                  content: "Map count: " + numResults,
+                                  actions: [tableViewerAction] // adds the custom popup action
                                };
                                $('#results').html("Map count: " + numResults + " maps");  
                                // Create a new table with the array of features 
-                               table.setData(features);
-                               // Show the icon to get the table back
-                               $(".esri-icon-table").show();
+                               table.setData(features);  
                              }
                             }
                     });   
@@ -324,6 +371,7 @@
 
         // Code for the search bar functions
         $( "#submit" ).click(function() {
+          view.popup.close();
           $(".esri-icon-table").show();
           // get the value of the search box
           var searchVal = $( "#search" ).val();
@@ -452,23 +500,67 @@
                       langSelect.appendChild(langOpt);                                         
                     });                     
                   }
-          });       
+          });  
 
         // Function to rotate the map
-        function rotate() {
-          if (!view.interacting) {
-            view.goTo({
-                heading: view.camera.heading + 0.2,
-                center: view.center
-            }, {animate: false});
-            requestAnimationFrame(rotate);
-          }
-        }    
+        function rotate() {         
+          view.goTo({
+              heading: view.camera.heading + 0.2,
+              center: view.center
+          }, {animate: false});
+          // begin the rotation
+          var req = requestAnimationFrame(rotate);            
+          // when the user clicks on the pause button
+          pauseBtn.addEventListener('click', function(event){  
+            // cancel the rotation
+            cancelAnimationFrame(req);
+            $(".esri-icon-play").show(); 
+            $(".esri-icon-pause").hide();     
+          })
+        };    
+
         // Custom Buttons
+         var homeBtn = new Home({
+          view: view
+        });
+
+        // Add the home button to the top left corner of the view
+        view.ui.add(homeBtn, "top-left");        
+        
+        // If the advanced search is closed, change the search value back to Keyword
+        $('#advancedModal').on('hidden.bs.modal', function (e) {
+          $('#searchtype')
+            .val('Keyword')
+            .trigger('change');
+        })
+
+        // Rotate play button
+        var rotateBtn = document.createElement('div');        
+        rotateBtn.className = "esri-icon-play esri-widget--button esri-widget esri-interactive";
+        rotateBtn.title = "Auto-rotate map";
+        rotateBtn.addEventListener('click', function(event){
+          rotate();
+          $(".esri-icon-play").hide();
+          $(".esri-icon-pause").show();         
+        })
+
+        // Add the button to the UI
+        view.ui.add(rotateBtn, "top-left");
+
+        // Pause button
+        var pauseBtn = document.createElement('div');
+        pauseBtn.className = "esri-icon-pause esri-widget--button esri-widget esri-interactive";
+        pauseBtn.title = "Pause rotation";
+
+        // Add the button to the UI
+        view.ui.add(pauseBtn, "top-left"); 
+
+        $(".esri-icon-pause").hide();
+
         // Add element for the table button using Esri widgets
         var tableBtn = document.createElement('div');
         tableBtn.className = "esri-icon-table esri-widget--button esri-widget esri-interactive";
-        tableBtn.title = "Open Table";
+        tableBtn.title = "Open table";
         tableBtn.addEventListener('click', function(event){
           // Toggle table
           $('#drawerModal').modal('show');
@@ -477,28 +569,11 @@
         // Add the button to the UI
         view.ui.add(tableBtn, "top-left"); 
         // Hide the button by default  
-        $(".esri-icon-table").hide();
-        // If the advanced search is closed, change the search value back to Keyword
-        $('#advancedModal').on('hidden.bs.modal', function (e) {
-          $('#searchtype')
-            .val('Keyword')
-            .trigger('change');
-        })
-
-        // Rotate button
-        var rotateBtn = document.createElement('div');
-        rotateBtn.className = "esri-icon-play esri-widget--button esri-widget esri-interactive";
-        rotateBtn.title = "Auto-Rotate Map";
-        rotateBtn.addEventListener('click', function(event){
-          // Rotate Map
-          rotate();
-        })
-
-        // Add the button to the UI
-        view.ui.add(rotateBtn, "top-left"); 
+        $(".esri-icon-table").hide();        
 
         // when someone clicks the advanced search submit button        
         $("#advancedBtn").click(function(){
+          view.popup.close();
           // create an empty array for search strings
           var searchStrings = [];
           // get the values of the boxes from the advacned search modal
@@ -511,7 +586,7 @@
           var endYearVal = $("#endYear").val();
           console.log(themeVal, langVal, geoVal, authorVal, pubVal, startYearVal, endYearVal);
           // if the search boxes are blank print error message
-          if (themeVal == 'Select Theme' && langVal == 'Select Language' && geoVal == 'Select Location' && authorVal == "" 
+          if (themeVal == 'Select Theme' && langVal == 'Select Language' && geoVal == 'Select Region / Geography' && authorVal == "" 
             && pubVal == "" && startYearVal == "" && endYearVal == "") {
             alert('Please select or enter a value for at least one search field.')
           } else if (startYearVal != "" && endYearVal == "" || startYearVal == "" && endYearVal != "") {
@@ -525,7 +600,7 @@
               var langString = "Language = " + "'" + langVal + "'"; 
               searchStrings.push(langString);                         
             }
-            if (geoVal != 'Select Location') {              
+            if (geoVal != 'Select Region / Geography') {              
               var geoString = "Geo = " + "'" + geoVal + "'";
               searchStrings.push(geoString);                   
             }
@@ -572,17 +647,48 @@
         $('#endYear').change(function() {
           $(this).val($(this).val().match(/\d*\.?\d+/));
         });
+
+        // Popup Actions
+        var tableViewerAction = {
+          // This text is displayed as a tooltip
+          title: "View maps",
+          // The ID by which to reference the action in the event handler
+          id: "view-table",
+          // Sets the icon font used to style the action button
+          className: "esri-icon-table"
+        };        
+
+        // This event fires for each click on any action
+        view.popup.on("trigger-action", function(event){
+          // If the view image action is clicked, open the table modal
+          if(event.action.id === "view-table"){
+            $('#drawerModal').modal('show');
+            table.redraw(true);
+          }
+        });
         
       }); // end of map JS
     </script>
   </head>
 
   <body>
-    <nav class="navbar navbar-light bg-light">
+    <nav class="navbar navbar-expand-md navbar-light bg-light">
   <a class="navbar-brand" href="https://geospatial.asu.edu/">
     <img src="asulogo.png" width="50" height="50" class="d-inline-block align-top" alt="">
       &nbsp;Map and Geospatial Hub | Collections & Resources 3D Explorer
   </a>
+  <div class="collapse navbar-collapse" id="navbarNav" style="">
+        <ul class="navbar-nav mr-auto">           
+        </ul>
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" href="https://lib.asu.edu/geo">Map and Geospatial Hub</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="https://lib.asu.edu/geo/services">Submit a Service Request</a>
+            </li>
+        </ul>
+    </div>
 </nav>
     <div id="viewDiv"></div>
     <!-- Image and text -->
@@ -591,7 +697,7 @@
     <div class="modal-dialog" role="document" style="position:absolute;bottom:0;margin:0;width:100%; max-width: none;">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title"><div id="drawerTitle"></div><div id="results"></div></h5>
+          <h5 class="modal-title"><div id="drawerTitle" style="display: inline-block;"></div>&nbsp;<div id="results" style="display: inline-block;"></div></h5>
           <button type="button" class="btn btn-outline-success" id="download"><i class="fa fa-download" aria-hidden="true" title="Download table"></i> </button>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
@@ -679,7 +785,7 @@
         </button>
       </div>
       <div class="modal-body">
-        <p>Opps. It looks like we don't have any data available at the moment for this drawer. We are working hard to inventory our maps.
+        <p>Oops. It looks like we don't have any data available at the moment for this drawer. We are working hard to inventory our maps.
         Please check back soon or visit the Map and Geospatial Hub to view our map collections.</p>        
       </div>
       <div class="modal-footer">        
