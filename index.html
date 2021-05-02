@@ -2,26 +2,23 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
-    <title>Hayden Library Geospatial Hub 3D Model</title>
+    <title>Map and Geospatial Hub 3D Explorer</title>
 
     <link rel="stylesheet" href="https://js.arcgis.com/4.18/esri/themes/light/main.css" />
     <link href="https://unpkg.com/tabulator-tables@4.9.3/dist/css/tabulator.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">    
     <!-- Load icon library -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
-    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.9.3/dist/js/tabulator.min.js"></script>   
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@4.9.3/dist/js/tabulator.min.js"></script>    
     <script src="https://js.arcgis.com/4.18/"></script>
-    
-    
-
 
     <style>
       body, html {
-        font-family: 'Montserrat', sans-serif;
+        font-family: 'Montserrat', sans-serif !important;
       }
       #viewDiv {
         position: absolute;
@@ -46,12 +43,12 @@
 }
 
 .navbar-light .navbar-nav .nav-link {
-  color: #EEEEEE;
+  color: #d9dde0;
   font-size: 13px;
 }
 
 .navbar-light .navbar-nav .nav-link:hover {
-  color: #8C1D40;  
+  color: white;  
 }
 
 #search {
@@ -124,7 +121,7 @@
 }
 
 .navbar-light .navbar-brand:hover {
-  color: #8C1D40;      
+  color: white;      
 }
 
 #advancedBtn {
@@ -144,14 +141,95 @@
   border-color: #8c1d40;  
 }
 
+#tablebtn {
+  width: 50%;
+  font-size: 10px;
+  color: white;  
+  border-radius: 0px;
+  padding: 12px;
+  background-color: #8c1d40;
+  border-color:#8c1d40;  
+}
 
+#tablebtn:hover {
+  border-color: #D23153;
+  background-color: #D23153
+}
 
 .esri-widget {
   font-family: 'Montserrat', sans-serif;
 }
+
+body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popup__main-container {
+    width: 296px;
+    box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.4);
+    padding-bottom: 55px;
+}
+
+body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popup__main-container .esri-popup__footer.esri-popup__footer--has-actions .esri-popup__inline-actions-container {
+    margin: 15px;
+    margin-top: 0;
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popup__main-container .esri-popup__footer.esri-popup__footer--has-actions .esri-popup__button.esri-popup__action {
+    height: 35px;
+    font-size: 12px;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -moz-user-select: none;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: inline-block;
+    letter-spacing: 1px;
+    line-height: 1.71429em;
+    text-transform: uppercase;
+    color: #6aa23f;
+    background: none;
+    border: solid 1px #6aa23f;
+    width: 100%;
+    margin: 0;
+    text-align: center;
+    padding: 0;
+    line-height: 35px;
+    margin-top: 10px;
+}
+
+#viewDiv .esri-popup__inline-actions-container:only-child > .esri-popup__action {
+  max-width: none;
+}
+
+.esri-popup__inline-actions-container>.esri-popup__action, .esri-popup__inline-actions-container>.esri-popup__action-toggle {
+  flex: 0 1 auto;
+}
+
+.esri-popup__footer .esri-popup__button {
+    font-weight: 500;
+    font-size: 12px;
+    position: relative;
+    display: flex;
+    justify-content: flex-start;
+    flex: 0 0 auto;
+}
+
+body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popup__main-container .esri-popup__footer.esri-popup__footer--has-actions {
+    bottom: 0;
+    top: auto;
+    position: absolute;
+    width: 100%;
+    margin-top: 0;
+    padding-top: 0;
+}
+
+
     </style>
 
-    <script>
+    <script>    
+
+      
+      // JS for the map
       require(["esri/Map", "esri/views/SceneView", "esri/WebScene", "esri/layers/SceneLayer", "esri/tasks/support/Query",
         "esri/widgets/Home", "esri/geometry/Extent"], function(
         Map,
@@ -162,7 +240,7 @@
         Home,
         Extent      
       ) {           
-
+       
         // setup the variable for highlight with no value  
         var highlight = null;  
 
@@ -206,7 +284,7 @@
           maxScale: 0,           // User can overzoom tiles
           rotationEnabled: true // Disables map rotation
         };    */
-
+        
         // Dock the popup to a fixed position
         view.popup.dockOptions = {
           // Disable the dock button so users cannot undock the popup
@@ -217,9 +295,12 @@
             height: 10000
           }
         };
+        
         // Creates a  new table to hold our map attributes  
         var table = new Tabulator("#drawers-table", {             
             height: 350,          
+            //layout:"fitColumns",
+            //autoResize:false,                                 
             columns:[
                 {title:"Title", field:"attributes.Title"},
                 {title:"Author", field:"attributes.Author"},
@@ -227,11 +308,10 @@
                 {title:"Publication Date", field:"attributes.Publication_Date"},
                 {title:"Scale", field:"attributes.Scale"},
                 {title:"Catalog Item", field:"attributes.Catalog_Link", formatter:"link"},
-                {title:"Call Number", field:"attributes.Call_Number"},
-                {title:"MMS", field:"attributes.MMS"},                
+                {title:"Call Number", field:"attributes.Call_Number"},                                
                 {title:"Language", field:"attributes.Language"},
                 {title:"Theme", field:"attributes.Theme"},
-                {title:"Location", field:"attributes.Geo"},                
+                {title:"Region / Geography", field:"attributes.Geo"},                
                 {title:"Drawer ID", field:"attributes.Drawer_ID"},                
             ],  
             // Detect when someone clicks on a row in the table
@@ -259,8 +339,8 @@
                    // returns a feature set with features containing an OBJECTID
                    var objectID = response.features[0].attributes.OBJECTID;
                    var cabId = response.features[0].attributes.CAB_ID;
-                   var zmin = (response.features[0].attributes.Z_Min/3.28);
-                   var zmax = (response.features[0].attributes.Z_Max/3.28);
+                   var zmin = (response.features[0].attributes.Z_Min / 3.28);
+                   var zmax = (response.features[0].attributes.Z_Max / 3.28);
                   
                    view.whenLayerView(cabLayer).then(function(layerView) {
                       var queryExtent = new Query({
@@ -276,6 +356,7 @@
                         zmax: zmax,                        
                         spatialReference: { wkid: 4326 }
                       });
+
                       cabLayer.queryExtent(queryExtent).then(function(result) {
                         view.goTo(new_ext.expand(3), { speedFactor: 0.5 });                        
                       });
@@ -295,12 +376,12 @@
                       });
                  });           
             },   
-        });
-
+        });        
+        
         //trigger download of mapdata.csv file
         $("#download").click(function(){
             table.download("csv", "mapdata.csv", {sheetName:"Map Data"});
-        });
+        });        
 
         view.when(function() {
           // Get the cabinets layer from webScene
@@ -321,7 +402,7 @@
 
                 view.hitTest(event, { include: [cabLayer] }).then(function(response) {            
                   // check if a feature is returned from the cabLayer
-                  if (response.results.length) {
+                  if (response.results.length) {                                 
                     $(".esri-icon-table").hide();
                     const graphic = response.results[0].graphic;
                     console.log(graphic.attributes);
@@ -339,8 +420,8 @@
                             success: function(data) {
                              if (data.features.length <= 0) {
                               cabLayer.popupTemplate = {
-                                  title: "Drawer: " + drawerId + " (" + drawerTitle + ")",
-                                  content: "Inventory coming soon!"                                 
+                                  title: "<h6>Drawer Number: " + drawerId,
+                                  content: "Drawer Title: " + drawerTitle + "<br><br>Inventory coming soon!"                         
                                };
                                //$('#noDataModal').modal('show');
                                //view.popup.close();
@@ -353,13 +434,14 @@
                                //$('#drawerModal').modal('show');                            
                                var numResults = data.features.length;
                                cabLayer.popupTemplate = {
-                                  title: "Drawer: " + drawerId + " (" + drawerTitle + ")",
-                                  content: "Map count: " + numResults,
+                                  title: "<b><h6>Drawer Number: " + drawerId + "</b>" ,
+                                  content: "<h6>Drawer Title: "  + drawerTitle + "<br> Map Count: " + numResults,           
                                   actions: [tableViewerAction] // adds the custom popup action
                                };
+
                                $('#results').html("Map count: " + numResults + " maps");  
                                // Create a new table with the array of features 
-                               table.setData(features);  
+                               table.setData(features);                                 
                              }
                             }
                     });   
@@ -367,7 +449,25 @@
                 });
             }); //end map click
           });
-        }); // end of view
+        }); // end of view   
+
+        // Change the appearance of the popup based on which layer is selected
+        view.when(function () {
+          // Watch for when features are selected
+          view.popup.watch("selectedFeature", function (graphic) {
+            if (graphic) {
+              if (graphic.layer.title == 'Map Cabinets') {
+                $(function() {            
+                $("body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popup__main-container").css('padding-bottom', '55px');                 
+              });
+              } else  if (graphic.layer.title != 'Map Cabinets') {
+                $(function() {            
+                $("body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popup__main-container").css('padding-bottom', '0px');                
+              });
+              }              
+            }
+          })
+        });
 
         // Code for the search bar functions
         $( "#submit" ).click(function() {
@@ -557,6 +657,18 @@
 
         $(".esri-icon-pause").hide();
 
+        // Add element for the 360 photo viewer button using Esri widgets
+        var viewerBtn = document.createElement('div');
+        viewerBtn.className = "esri-icon-media esri-widget--button esri-widget esri-interactive";
+        viewerBtn.title = "view 360 hub image";
+        viewerBtn.addEventListener('click', function(event){
+          // Toggle table
+          $('#viewerModal').modal('show');
+        })
+
+        // Add the button to the UI
+        view.ui.add(viewerBtn, "top-left"); 
+
         // Add element for the table button using Esri widgets
         var tableBtn = document.createElement('div');
         tableBtn.className = "esri-icon-table esri-widget--button esri-widget esri-interactive";
@@ -576,7 +688,7 @@
           view.popup.close();
           // create an empty array for search strings
           var searchStrings = [];
-          // get the values of the boxes from the advacned search modal
+          // get the values of the boxes from the advanced search modal
           var themeVal = $("#theme").val();
           var langVal = $('#language').val();
           var geoVal = $("#location").val();
@@ -648,14 +760,16 @@
           $(this).val($(this).val().match(/\d*\.?\d+/));
         });
 
-        // Popup Actions
+        // Popup Actions        
+        // remove the zoom-to popup action  
+        view.popup.actions = [];
         var tableViewerAction = {
           // This text is displayed as a tooltip
-          title: "View maps",
+          title: "View map list",
           // The ID by which to reference the action in the event handler
           id: "view-table",
           // Sets the icon font used to style the action button
-          className: "esri-icon-table"
+          className: "esri-icon-collection"
         };        
 
         // This event fires for each click on any action
@@ -673,9 +787,9 @@
 
   <body>
     <nav class="navbar navbar-expand-md navbar-light bg-light">
-  <a class="navbar-brand" href="https://geospatial.asu.edu/">
+  <a class="navbar-brand">
     <img src="asulogo.png" width="50" height="50" class="d-inline-block align-top" alt="">
-      &nbsp;Map and Geospatial Hub | Collections & Resources 3D Explorer
+      &nbsp;Map and Geospatial Hub 3D Explorer
   </a>
   <div class="collapse navbar-collapse" id="navbarNav" style="">
         <ul class="navbar-nav mr-auto">           
@@ -705,6 +819,22 @@
         </div>
         <div class="modal-body">
           <div id="drawers-table"></div>
+        </div>        
+      </div>
+    </div>
+</div>
+
+<div class="modal" id="viewerModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Hub 360 Photo Viewer</h5> 
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>         
+        </div>
+        <div class="modal-body">
+          <iframe width="760" height="400" allowfullscreen style="border-style:none;" src="https://cdn.pannellum.org/2.5/pannellum.htm#panorama=https%3A//rcowling.github.io/3dhub/viewerimage.jpg&autoLoad=true"></iframe>
         </div>        
       </div>
     </div>
