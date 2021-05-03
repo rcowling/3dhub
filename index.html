@@ -160,6 +160,12 @@
   font-family: 'Montserrat', sans-serif;
 }
 
+/*.modal {
+    pointer-events: none;
+}
+.modal-backdrop {
+    display: none;
+}*/
 body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popup__main-container {
     width: 296px;
     box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.4);
@@ -390,17 +396,24 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
           }).items[0];
           // get the DRAWER_ID and DRAWER_TITLE  
           cabLayer.outFields = ['DRAWER_ID', 'DRAWER_TITLE'];
+
+          // Get the bookshelves layer from webScene
+          var shelfLayer = webscene.allLayers.filter(function(elem) {
+            return elem.title === "Bookshelves";
+          }).items[0];
+          // get the DRAWER_ID and DRAWER_TITLE  
+          shelfLayer.outFields = ['DRAWER_ID'];
   
           // retrieve the layer view of the scene layer
-          view.whenLayerView(cabLayer)
-            .then(function(cabLayerView) {
+          view.whenLayerView(cabLayer, shelfLayer)
+            .then(function(cabLayerView, shelfLayerView) {
               view.on("click", function(event) { 
                 // if any, remove the previous highlights
                 if (highlight) {
                   highlight.remove();
                 }
 
-                view.hitTest(event, { include: [cabLayer] }).then(function(response) {            
+                view.hitTest(event, { include: [cabLayer, shelfLayer] }).then(function(response) {            
                   // check if a feature is returned from the cabLayer
                   if (response.results.length) {                                 
                     $(".esri-icon-table").hide();
@@ -409,7 +422,7 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
                     // Get the Drawer_ID of the clicked drawer
                     var drawerId = graphic.attributes.DRAWER_ID;
                     var drawerTitle = graphic.attributes.DRAWER_TITLE; 
-                    var cabId = graphic.attributes.CAB_ID;
+                    //var cabId = graphic.attributes.CAB_ID;
                     $('#drawerTitle').html("Drawer " + drawerId + ": " + drawerTitle);
                     console.log(drawerId);
                     // Call to the ArcGIS REST API to retreive the maps in each drawer
@@ -422,6 +435,10 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
                               cabLayer.popupTemplate = {
                                   title: "<h6>Drawer Number: " + drawerId,
                                   content: "Drawer Title: " + drawerTitle + "<br><br>Inventory coming soon!"                         
+                               };
+                               shelfLayer.popupTemplate = {
+                                  title: "<h6>Drawer Number: " + drawerId,
+                                  //content: "Drawer Title: " + drawerTitle + "<br><br>Inventory coming soon!"                         
                                };
                                //$('#noDataModal').modal('show');
                                //view.popup.close();
@@ -437,6 +454,12 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
                                   title: "<b><h6>Drawer Number: " + drawerId + "</b>" ,
                                   content: "<h6>Drawer Title: "  + drawerTitle + "<br> Map Count: " + numResults,           
                                   actions: [tableViewerAction] // adds the custom popup action
+                               };
+
+                               shelfLayer.popupTemplate = {
+                                  title: "<b><h6>Drawer Number: " + drawerId + "</b>" ,
+                                  content: "<h6>Drawer Title: "  + drawerTitle +  "<br> Map Count: " + numResults,           
+                                  actions: [atlasViewerAction] // adds the custom popup action
                                };
 
                                $('#results').html("Map count: " + numResults + " maps");  
@@ -456,11 +479,11 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
           // Watch for when features are selected
           view.popup.watch("selectedFeature", function (graphic) {
             if (graphic) {
-              if (graphic.layer.title == 'Map Cabinets') {
+              if (graphic.layer.title == 'Map Cabinets' || graphic.layer.title == 'Bookshelves') {
                 $(function() {            
                 $("body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popup__main-container").css('padding-bottom', '55px');                 
               });
-              } else  if (graphic.layer.title != 'Map Cabinets') {
+              } else  if (graphic.layer.title != 'Map Cabinets' || graphic.layer.title != 'Bookshelves') {
                 $(function() {            
                 $("body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popup__main-container").css('padding-bottom', '0px');                
               });
@@ -763,6 +786,7 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
         // Popup Actions        
         // remove the zoom-to popup action  
         view.popup.actions = [];
+        // popup action for maps
         var tableViewerAction = {
           // This text is displayed as a tooltip
           title: "View map list",
@@ -776,6 +800,25 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
         view.popup.on("trigger-action", function(event){
           // If the view image action is clicked, open the table modal
           if(event.action.id === "view-table"){
+            $('#drawerModal').modal('show');
+            table.redraw(true);
+          }
+        });
+
+        // popup action for atlases
+        var atlasViewerAction = {
+          // This text is displayed as a tooltip
+          title: "View atlas list",
+          // The ID by which to reference the action in the event handler
+          id: "view-atlas",
+          // Sets the icon font used to style the action button
+          className: "esri-icon-collection"
+        };        
+
+        // This event fires for each click on any action
+        view.popup.on("trigger-action", function(event){
+          // If the view image action is clicked, open the table modal
+          if(event.action.id === "view-atlas"){
             $('#drawerModal').modal('show');
             table.redraw(true);
           }
