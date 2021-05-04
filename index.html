@@ -305,7 +305,7 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
         // Creates a  new table to hold our map attributes  
         var table = new Tabulator("#drawers-table", {             
             height: 350,          
-            //layout:"fitColumns",
+            layout:"fitData",
             //autoResize:false,                                 
             columns:[
                 {title:"Title", field:"attributes.Title"},
@@ -330,58 +330,112 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
               // Get the Drawer_ID from the selected row in the table            
               var drawerId = row._row.data.attributes.Drawer_ID;               
               console.log('you clicked a row'); 
-              // Get the cabinets layer from webScene
-              var cabLayer = webscene.allLayers.filter(function(elem) {
-                return elem.title === "Map Cabinets";
-              }).items[0];        
-              var query = cabLayer.createQuery();
-              // Query the cabinets layer for the Drawer_ID
-              query.where = "DRAWER_ID =" + "'" + drawerId + "'";
-              query.returnGeometry = true;               
-              query.returnZ = true;
-              query.outFields = ["OBJECTID", "DRAWER_ID", "CAB_ID", "Z_Min", "Z_Max"];
-              cabLayer.queryFeatures(query)
-                .then(function(response){
-                   // returns a feature set with features containing an OBJECTID
-                   var objectID = response.features[0].attributes.OBJECTID;
-                   var cabId = response.features[0].attributes.CAB_ID;
-                   var zmin = (response.features[0].attributes.Z_Min / 3.28);
-                   var zmax = (response.features[0].attributes.Z_Max / 3.28);
-                  
-                   view.whenLayerView(cabLayer).then(function(layerView) {
-                      var queryExtent = new Query({
-                        objectIds: [objectID]
-                      });
-                      // zoom to the extent of drawer that is clicked on the table  
-                      var new_ext = new Extent({
-                        xmin: response.features[0].geometry.extent.xmin, 
-                        ymin: response.features[0].geometry.extent.ymin, 
-                        zmin: zmin,
-                        xmax: response.features[0].geometry.extent.xmax, 
-                        ymax: response.features[0].geometry.extent.ymax,
-                        zmax: zmax,                        
-                        spatialReference: { wkid: 4326 }
-                      });
+              if (drawerId < 241) {
+                // Get the cabinets layer from webScene
+                var cabLayer = webscene.allLayers.filter(function(elem) {
+                  return elem.title === "Map Cabinets";
+                }).items[0];        
+                var query = cabLayer.createQuery();
+                // Query the cabinets layer for the Drawer_ID
+                query.where = "DRAWER_ID =" + "'" + drawerId + "'";
+                query.returnGeometry = true;               
+                query.returnZ = true;
+                query.outFields = ["OBJECTID", "DRAWER_ID", "Z_Min", "Z_Max"];
+                cabLayer.queryFeatures(query)
+                  .then(function(response){
+                     // returns a feature set with features containing an OBJECTID
+                     var objectID = response.features[0].attributes.OBJECTID;
+                     //var cabId = response.features[0].attributes.CAB_ID;
+                     var zmin = (response.features[0].attributes.Z_Min / 3.28);
+                     var zmax = (response.features[0].attributes.Z_Max / 3.28);
+                    
+                     view.whenLayerView(cabLayer).then(function(layerView) {
+                        var queryExtent = new Query({
+                          objectIds: [objectID]
+                        });
+                        // zoom to the extent of drawer that is clicked on the table  
+                        var new_ext = new Extent({
+                          xmin: response.features[0].geometry.extent.xmin, 
+                          ymin: response.features[0].geometry.extent.ymin, 
+                          zmin: zmin,
+                          xmax: response.features[0].geometry.extent.xmax, 
+                          ymax: response.features[0].geometry.extent.ymax,
+                          zmax: zmax,                        
+                          spatialReference: { wkid: 4326 }
+                        });
 
-                      cabLayer.queryExtent(queryExtent).then(function(result) {
-                        view.goTo(new_ext.expand(3), { speedFactor: 0.5 });                        
-                      });
-                      
-                      // if any, remove the previous highlights
-                      if (highlight) {
-                        highlight.remove();
-                      }
-                      // highlight the feature with the returned objectId
-                      highlight = layerView.highlight([objectID]);
-                      })
-                      // open a popup at the drawer location of the selected map
-                      view.popup.open({
-                        // Set the popup's title to the coordinates of the clicked location
-                        title: "The item " + '"' + row._row.data.attributes.Title + '" ' + "is located in Drawer " + drawerId + ".", 
-                        location: response.features[0].geometry.centroid// Set the location of the popup to the clicked location        
-                      });
-                 });           
-            },   
+                        cabLayer.queryExtent(queryExtent).then(function(result) {
+                          view.goTo(new_ext.expand(3), { speedFactor: 0.5 });                        
+                        });
+                        
+                        // if any, remove the previous highlights
+                        if (highlight) {
+                          highlight.remove();
+                        }
+                        // highlight the feature with the returned objectId
+                        highlight = layerView.highlight([objectID]);
+                        })
+                        // open a popup at the drawer location of the selected map
+                        view.popup.open({
+                          // Set the popup's title to the coordinates of the clicked location
+                          title: "The item " + '"' + row._row.data.attributes.Title + '" ' + "is located in Drawer " + drawerId + ".", 
+                          location: response.features[0].geometry.centroid// Set the location of the popup to the clicked location        
+                        });
+                   });           
+            } else if (drawerId >= 241) {
+              // Get the cabinets layer from webScene
+                var shelfLayer = webscene.allLayers.filter(function(elem) {
+                  return elem.title === "Bookshelves";
+                }).items[0];        
+                var query = shelfLayer.createQuery();
+                // Query the cabinets layer for the Drawer_ID
+                query.where = "DRAWER_ID =" + "'" + drawerId + "'";
+                query.returnGeometry = true;               
+                query.returnZ = true;
+                query.outFields = ["OBJECTID", "DRAWER_ID", "Z_Min", "Z_Max"];
+                shelfLayer.queryFeatures(query)
+                  .then(function(response){
+                     // returns a feature set with features containing an OBJECTID
+                     var objectID = response.features[0].attributes.OBJECTID;
+                     //var cabId = response.features[0].attributes.CAB_ID;
+                     var zmin = (response.features[0].attributes.Z_Min / 3.28);
+                     var zmax = (response.features[0].attributes.Z_Max / 3.28);
+                    
+                     view.whenLayerView(shelfLayer).then(function(layerView) {
+                        var queryExtent = new Query({
+                          objectIds: [objectID]
+                        });
+                        // zoom to the extent of drawer that is clicked on the table  
+                        var new_ext = new Extent({
+                          xmin: response.features[0].geometry.extent.xmin, 
+                          ymin: response.features[0].geometry.extent.ymin, 
+                          zmin: zmin,
+                          xmax: response.features[0].geometry.extent.xmax, 
+                          ymax: response.features[0].geometry.extent.ymax,
+                          zmax: zmax,                        
+                          spatialReference: { wkid: 4326 }
+                        });
+
+                        shelfLayer.queryExtent(queryExtent).then(function(result) {
+                          view.goTo(new_ext.expand(3), { speedFactor: 0.5 });                        
+                        });
+                        
+                        // if any, remove the previous highlights
+                        if (highlight) {
+                          highlight.remove();
+                        }
+                        // highlight the feature with the returned objectId
+                        highlight = layerView.highlight([objectID]);
+                        })
+                        // open a popup at the drawer location of the selected map
+                        view.popup.open({
+                          // Set the popup's title to the coordinates of the clicked location
+                          title: "The item " + '"' + row._row.data.attributes.Title + '" ' + "is located in Shelf " + drawerId + ".", 
+                          location: response.features[0].geometry.centroid// Set the location of the popup to the clicked location        
+                        });
+                   });
+            }   
+          }
         });        
         
         //trigger download of mapdata.csv file
@@ -437,7 +491,7 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
                                   content: "Drawer Title: " + drawerTitle + "<br><br>Inventory coming soon!"                         
                                };
                                shelfLayer.popupTemplate = {
-                                  title: "<h6>Drawer Number: " + drawerId,
+                                  title: "<h6>Shelf Number: " + drawerId,
                                   //content: "Drawer Title: " + drawerTitle + "<br><br>Inventory coming soon!"                         
                                };
                                //$('#noDataModal').modal('show');
@@ -452,17 +506,17 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
                                var numResults = data.features.length;
                                cabLayer.popupTemplate = {
                                   title: "<b><h6>Drawer Number: " + drawerId + "</b>" ,
-                                  content: "<h6>Drawer Title: "  + drawerTitle + "<br> Map Count: " + numResults,           
+                                  content: "<h6>Drawer Title: "  + drawerTitle + "<br> Item Count: " + numResults,           
                                   actions: [tableViewerAction] // adds the custom popup action
                                };
 
                                shelfLayer.popupTemplate = {
-                                  title: "<b><h6>Drawer Number: " + drawerId + "</b>" ,
-                                  content: "<h6>Drawer Title: "  + drawerTitle +  "<br> Map Count: " + numResults,           
-                                  actions: [atlasViewerAction] // adds the custom popup action
+                                  title: "<b><h6>Shelf Number: " + drawerId + "</b>" ,
+                                  content: "<h6>Shelf Title: "  + drawerTitle +  "<br> Item Count: " + numResults,           
+                                  actions: [tableViewerAction] // adds the custom popup action
                                };
 
-                               $('#results').html("Map count: " + numResults + " maps");  
+                               $('#results').html("Item count: " + numResults + " items");  
                                // Create a new table with the array of features 
                                table.setData(features);                                 
                              }
@@ -518,7 +572,7 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
                        $('#drawerModal').modal('show'); 
                        // Get the number of results of the search
                        var numResults = data.features.length;    
-                       $('#results').html(numResults + " maps found for " + '"' + searchVal + '"');                  
+                       $('#results').html(numResults + " items found for " + '"' + searchVal + '"');                  
                        // Create a new table with the array of features 
                        table.setData(searchRes);
                       }
@@ -541,7 +595,7 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
                        var searchRes = data.features;  
                        $('#drawerModal').modal('show');  
                        var numResults = data.features.length;    
-                       $('#results').html(numResults + " maps found for " + '"' + searchVal + '"');
+                       $('#results').html(numResults + " items found for " + '"' + searchVal + '"');
                        // Create a new table with the array of features 
                        table.setData(searchRes);
                       }
@@ -555,7 +609,7 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
           // Get the value of the selected item
           var value = this.value;
           if (value == 'Keyword') {
-            $('#search').attr("placeholder", "Search maps...");
+            $('#search').attr("placeholder", "Search items...");
           } else if (value == 'Call Number') {
              $('#search').attr("placeholder", "Enter Call # (ie: G3300 1818 .H4 REF)");            
           } else if (value == 'Date') {
@@ -765,7 +819,7 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
                       var advancedRes = data.features;
                       table.setData(advancedRes);  
                       var numResults = advancedRes.length;    
-                      $('#results').html(numResults + " maps found for advanced search");   
+                      $('#results').html(numResults + " items found for advanced search");   
                       $("#drawerTitle").hide();                                                    
                       }                     
                 });   
@@ -789,7 +843,7 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
         // popup action for maps
         var tableViewerAction = {
           // This text is displayed as a tooltip
-          title: "View map list",
+          title: "View item list",
           // The ID by which to reference the action in the event handler
           id: "view-table",
           // Sets the icon font used to style the action button
@@ -803,27 +857,7 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
             $('#drawerModal').modal('show');
             table.redraw(true);
           }
-        });
-
-        // popup action for atlases
-        var atlasViewerAction = {
-          // This text is displayed as a tooltip
-          title: "View atlas list",
-          // The ID by which to reference the action in the event handler
-          id: "view-atlas",
-          // Sets the icon font used to style the action button
-          className: "esri-icon-collection"
-        };        
-
-        // This event fires for each click on any action
-        view.popup.on("trigger-action", function(event){
-          // If the view image action is clicked, open the table modal
-          if(event.action.id === "view-atlas"){
-            $('#drawerModal').modal('show');
-            table.redraw(true);
-          }
-        });
-        
+        });        
       }); // end of map JS
     </script>
   </head>
@@ -970,7 +1004,7 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
 <div class="container justify-content-center">
     <div class="row">
         <div class="col-md-8">
-            <div class="input-group mb-3"> <input type="text" class="form-control input-text" placeholder="Search maps..." aria-label="Title Search" id="search" aria-describedby="basic-addon2">
+            <div class="input-group mb-3"> <input type="text" class="form-control input-text" placeholder="Search items..." aria-label="Title Search" id="search" aria-describedby="basic-addon2">
                 <select class="form-control" id="searchtype">
                   <option>Keyword</option>
                   <option>Call Number</option>  
