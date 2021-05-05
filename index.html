@@ -304,7 +304,8 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
         
         // Creates a  new table to hold our map attributes  
         var table = new Tabulator("#drawers-table", {             
-            height: 350,          
+            height: 350,  
+            columnMinWidth:300,        
             layout:"fitData",
             //autoResize:false,                                 
             columns:[
@@ -313,7 +314,9 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
                 {title:"Publisher", field:"attributes.Publisher"},
                 {title:"Publication Date", field:"attributes.Publication_Date"},
                 {title:"Scale", field:"attributes.Scale"},
-                {title:"Catalog Item", field:"attributes.Catalog_Link", formatter:"link"},
+                {title:"Catalog Item", field:"attributes.Catalog_Link", formatter:"link", formatterParams:{                   
+                   target:"_blank",
+                }},
                 {title:"Call Number", field:"attributes.Call_Number"},                                
                 {title:"Language", field:"attributes.Language"},
                 {title:"Theme", field:"attributes.Theme"},
@@ -379,7 +382,8 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
                         view.popup.open({
                           // Set the popup's title to the coordinates of the clicked location
                           title: "The item " + '"' + row._row.data.attributes.Title + '" ' + "is located in Drawer " + drawerId + ".", 
-                          location: response.features[0].geometry.centroid// Set the location of the popup to the clicked location        
+                          location: response.features[0].geometry.centroid, // Set the location of the popup to the clicked location 
+                          actions: [returnToAction]      
                         });
                    });           
             } else if (drawerId >= 241) {
@@ -431,7 +435,8 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
                         view.popup.open({
                           // Set the popup's title to the coordinates of the clicked location
                           title: "The item " + '"' + row._row.data.attributes.Title + '" ' + "is located in Shelf " + drawerId + ".", 
-                          location: response.features[0].geometry.centroid// Set the location of the popup to the clicked location        
+                          location: response.features[0].geometry.centroid,// Set the location of the popup to the clicked location  
+                          actions: [returnToAction]      
                         });
                    });
             }   
@@ -462,6 +467,8 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
           view.whenLayerView(cabLayer, shelfLayer)
             .then(function(cabLayerView, shelfLayerView) {
               view.on("click", function(event) { 
+                // if any, remove the previous popup actions
+                view.popup.actions = [];
                 // if any, remove the previous highlights
                 if (highlight) {
                   highlight.remove();
@@ -504,9 +511,12 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
                                var features = data.features;     
                                //$('#drawerModal').modal('show');                            
                                var numResults = data.features.length;
+                               var startCallNo = data.features[0].attributes.Call_Number;
+                               var endCallNo = data.features[numResults - 1].attributes.Call_Number;                               
                                cabLayer.popupTemplate = {
                                   title: "<b><h6>Drawer Number: " + drawerId + "</b>" ,
-                                  content: "<h6>Drawer Title: "  + drawerTitle + "<br> Item Count: " + numResults,           
+                                  content: "<h6>Drawer Title: "  + drawerTitle + "<br> Item Count: " + numResults +
+                                  "<br> Call # Range: " + startCallNo + " - " + endCallNo,           
                                   actions: [tableViewerAction] // adds the custom popup action
                                };
 
@@ -516,7 +526,7 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
                                   actions: [tableViewerAction] // adds the custom popup action
                                };
 
-                               $('#results').html("Item count: " + numResults + " items");  
+                               $('#results').html(" | Item count: " + numResults + " items");  
                                // Create a new table with the array of features 
                                table.setData(features);                                 
                              }
@@ -549,7 +559,7 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
         // Code for the search bar functions
         $( "#submit" ).click(function() {
           view.popup.close();
-          $(".esri-icon-table").show();
+         // $(".esri-icon-table").show();
           // get the value of the search box
           var searchVal = $( "#search" ).val();
           // get the value of the search type dropdwn
@@ -603,6 +613,17 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
             });  
           }   
         });
+
+       // if users hits enter perform the search   
+       $( "#search" ).keyup(function(event) {
+          // Number 13 is the "Enter" key on the keyboard
+          if (event.keyCode === 13) {
+            // Cancel the default action, if needed
+            event.preventDefault();
+            // Trigger the button element with a click
+            document.getElementById("submit").click();
+          }        
+       }); 
 
         // Code for the search dropdown menu
         $("#searchtype").change(function () {
@@ -746,7 +767,7 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
         // Add the button to the UI
         view.ui.add(viewerBtn, "top-left"); 
 
-        // Add element for the table button using Esri widgets
+        /*// Add element for the table button using Esri widgets
         var tableBtn = document.createElement('div');
         tableBtn.className = "esri-icon-table esri-widget--button esri-widget esri-interactive";
         tableBtn.title = "Open table";
@@ -758,7 +779,7 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
         // Add the button to the UI
         view.ui.add(tableBtn, "top-left"); 
         // Hide the button by default  
-        $(".esri-icon-table").hide();        
+        $(".esri-icon-table").hide();        */
 
         // when someone clicks the advanced search submit button        
         $("#advancedBtn").click(function(){
@@ -848,7 +869,16 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
           id: "view-table",
           // Sets the icon font used to style the action button
           className: "esri-icon-collection"
-        };        
+        };  
+
+        var returnToAction = {
+          // This text is displayed as a tooltip
+          title: "Return to results",
+          // The ID by which to reference the action in the event handler
+          id: "return-to",
+          // Sets the icon font used to style the action button
+          className: "esri-icon-table"
+        };               
 
         // This event fires for each click on any action
         view.popup.on("trigger-action", function(event){
@@ -856,6 +886,9 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
           if(event.action.id === "view-table"){
             $('#drawerModal').modal('show');
             table.redraw(true);
+          }
+          if(event.action.id === "return-to"){
+            $('#drawerModal').modal('show');            
           }
         });        
       }); // end of map JS
@@ -873,10 +906,10 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
         </ul>
         <ul class="navbar-nav">
             <li class="nav-item">
-                <a class="nav-link" href="https://lib.asu.edu/geo">Map and Geospatial Hub</a>
+                <a class="nav-link" href=" https://geospatial.asu.edu" target="_blank" rel="noopener">Map and Geospatial Hub</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="https://lib.asu.edu/geo/services">Submit a Service Request</a>
+                <a class="nav-link" href="https://lib.asu.edu/geo/services" target="_blank" rel="noopener">Submit a Service Request</a>
             </li>
         </ul>
     </div>
