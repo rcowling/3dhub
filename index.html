@@ -261,7 +261,7 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
         var webscene = new WebScene({
           portalItem: {
             // autocasts as new PortalItem()
-            id: "78d7af4d3b524ddda205fe1c542c52ac"
+            id: "78d7af4d3b524ddda205fe1c542c52ac" // this is the id of the sceneview the app is connected to
           }
         });   
 
@@ -309,12 +309,11 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
           }
         };
         
-        // Creates a  new table to hold our map attributes  
+        // Creates a new table to hold our map attributes  
         var table = new Tabulator("#drawers-table", {             
             height: 350,            
             selectable: 1,
-            clipboard:true, //enable clipboard functionality
-            //autoResize:false,  
+            clipboard:true, //enable clipboard functionality              
             columns:[
                 {title:"Title", field:"attributes.TITLE", width: 500},
                 {title:"Author", field:"attributes.AUTHOR", width: 300},
@@ -441,8 +440,9 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
                         })
                         // open a popup at the drawer location of the selected map
                         view.popup.open({
-                          // Set the popup's title to the coordinates of the clicked location
-                          title: "The item " + '"' + row._row.data.attributes.TITLE + '" ' + "is located in Shelf " + drawerId + ".", 
+                          // Set the popup's title to the coordinates of the clicked location                          
+                          title: "<h6><b>Shelf ID: "  + drawerId + "</b>", 
+                          content: "The item " + '"<b>' + row._row.data.attributes.TITLE + '</b>" ' + "is located in Shelf " + drawerId + ".",
                           location: response.features[0].geometry.centroid,// Set the location of the popup to the clicked location  
                           actions: [returnToAction]      
                         });
@@ -490,8 +490,8 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
                     console.log(graphic.attributes);
                     // Get the LOC_ID of the clicked drawer
                     var drawerId = graphic.attributes.LOC_ID;
-                    var drawerTitle = graphic.attributes.DRAWER_TITLE;
-                    var shelfTitle = graphic.attributes.Feature; 
+                    var drawerTitle = graphic.attributes.DRAWER_TITLE;                     
+                    console.log(shelfTitle);
                     //var cabId = graphic.attributes.CAB_ID;
                     $('#drawerTitle').html("Drawer " + drawerId + ": " + drawerTitle);
                     console.log(drawerId);
@@ -521,7 +521,8 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
                                //$('#drawerModal').modal('show');                            
                                var numResults = data.features.length;
                                var startCallNo = data.features[0].attributes.CALL_NUM;
-                               var endCallNo = data.features[numResults - 1].attributes.CALL_NUM;                               
+                               var endCallNo = data.features[numResults - 1].attributes.CALL_NUM;   
+                               var shelfName = data.features[0].attributes.LOC_TYPE;                            
                                cabLayer.popupTemplate = {
                                   title: "<b><h6>Drawer ID: " + drawerId + "</b>" ,
                                   content: "<h6>Description: "  + drawerTitle + "<br><br> Item Count: " + numResults +
@@ -531,7 +532,7 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
 
                                shelfLayer.popupTemplate = {
                                   title: "<b><h6>Shelf ID: " + drawerId + "</b>" ,
-                                  content: "<h6>Description: "  + shelfTitle + "<br><br> Item Count: " + numResults +
+                                  content: "<h6>Description: "  + shelfName + "<br><br> Item Count: " + numResults +
                                   "<br><br>Range: " + startCallNo + " - " + endCallNo,           
                                   actions: [tableViewerAction] // adds the custom popup action
                                };
