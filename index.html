@@ -245,7 +245,9 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
         Query,
         Home,
         Extent      
-      ) {           
+      ) {    
+        // Service URL for the maps_master table on AGOL    
+        var tableURL = "https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/maps_master/FeatureServer/0/";       
        
         // setup the variable for highlight with no value  
         var highlight = null;  
@@ -304,25 +306,25 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
         
         // Creates a  new table to hold our map attributes  
         var table = new Tabulator("#drawers-table", {             
-            height: 350,  
-            columnMinWidth:300,        
-            layout:"fitData",
-            //autoResize:false,                                 
+            height: 350,            
+            selectable: 1,
+            clipboard:true, //enable clipboard functionality
+            //autoResize:false,  
             columns:[
-                {title:"Title", field:"attributes.Title"},
-                {title:"Author", field:"attributes.Author"},
-                {title:"Publisher", field:"attributes.Publisher"},
-                {title:"Publication Date", field:"attributes.Publication_Date"},
-                {title:"Scale", field:"attributes.Scale"},
-                {title:"Catalog Item", field:"attributes.Catalog_Link", formatter:"link", formatterParams:{                   
+                {title:"Title", field:"attributes.TITLE", width: 500},
+                {title:"Author", field:"attributes.AUTHOR", width: 300},
+                {title:"Publisher", field:"attributes.PUBLISHER", width: 300},
+                {title:"Publication Date", field:"attributes.DATE", width: 150},
+                {title:"Scale", field:"attributes.SCALE", width: 120},
+                {title:"Catalog Item", field:"attributes.CATALOG_LINK", width: 400, formatter:"link", formatterParams:{                   
                    target:"_blank",
                 }},
-                {title:"Call Number", field:"attributes.Call_Number"},                                
-                {title:"Language", field:"attributes.Language"},
-                {title:"Theme", field:"attributes.Theme"},
-                {title:"Region / Geography", field:"attributes.Geo"},                
-                {title:"Drawer ID", field:"attributes.Drawer_ID"},                
-            ],  
+                {title:"Call Number", field:"attributes.CALL_NUM", width: 250},                                
+                {title:"Language", field:"attributes.LANG", width: 150},
+                {title:"Theme", field:"attributes.THEME", width: 150},
+                {title:"Region / Geography", field:"attributes.GEO", width: 200},                
+                {title:"Drawer ID", field:"attributes.LOC_ID", width: 100},                
+            ],            
             // Detect when someone clicks on a row in the table
             rowClick:function(e, row){ 
               view.popup.close();   
@@ -330,8 +332,8 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
               $('#drawerModal').modal('hide');        
               //e - the click event object
               //row - row component
-              // Get the Drawer_ID from the selected row in the table            
-              var drawerId = row._row.data.attributes.Drawer_ID;               
+              // Get the LOC_ID from the selected row in the table            
+              var drawerId = row._row.data.attributes.LOC_ID;               
               console.log('you clicked a row'); 
               if (drawerId < 241) {
                 // Get the cabinets layer from webScene
@@ -339,11 +341,11 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
                   return elem.title === "Map Cabinets";
                 }).items[0];        
                 var query = cabLayer.createQuery();
-                // Query the cabinets layer for the Drawer_ID
-                query.where = "DRAWER_ID =" + "'" + drawerId + "'";
+                // Query the cabinets layer for the LOC_ID
+                query.where = "LOC_ID =" + "'" + drawerId + "'";
                 query.returnGeometry = true;               
                 query.returnZ = true;
-                query.outFields = ["OBJECTID", "DRAWER_ID", "Z_Min", "Z_Max"];
+                query.outFields = ["OBJECTID", "LOC_ID", "Z_Min", "Z_Max"];
                 cabLayer.queryFeatures(query)
                   .then(function(response){
                      // returns a feature set with features containing an OBJECTID
@@ -381,7 +383,8 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
                         // open a popup at the drawer location of the selected map
                         view.popup.open({
                           // Set the popup's title to the coordinates of the clicked location
-                          title: "The item " + '"' + row._row.data.attributes.Title + '" ' + "is located in Drawer " + drawerId + ".", 
+                          title: "<h6><b>Drawer ID: "  + drawerId + "</b>",  
+                          content: "The item " + '<b>"' + row._row.data.attributes.Title + '"</b> ' + "is located in Drawer " + drawerId + ".",
                           location: response.features[0].geometry.centroid, // Set the location of the popup to the clicked location 
                           actions: [returnToAction]      
                         });
@@ -392,11 +395,11 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
                   return elem.title === "Bookshelves";
                 }).items[0];        
                 var query = shelfLayer.createQuery();
-                // Query the cabinets layer for the Drawer_ID
-                query.where = "DRAWER_ID =" + "'" + drawerId + "'";
+                // Query the cabinets layer for the LOC_ID
+                query.where = "LOC_ID =" + "'" + drawerId + "'";
                 query.returnGeometry = true;               
                 query.returnZ = true;
-                query.outFields = ["OBJECTID", "DRAWER_ID", "Z_Min", "Z_Max"];
+                query.outFields = ["OBJECTID", "LOC_ID", "Z_Min", "Z_Max"];
                 shelfLayer.queryFeatures(query)
                   .then(function(response){
                      // returns a feature set with features containing an OBJECTID
@@ -451,17 +454,17 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
         view.when(function() {
           // Get the cabinets layer from webScene
           var cabLayer = webscene.allLayers.filter(function(elem) {
-            return elem.title === "Map Cabinets";
+            return elem.title === "Map Cabinets Update - Map Cabinets";
           }).items[0];
-          // get the DRAWER_ID and DRAWER_TITLE  
-          cabLayer.outFields = ['DRAWER_ID', 'DRAWER_TITLE'];
+          // get the LOC_ID and DRAWER_TITLE  
+          cabLayer.outFields = ['LOC_ID', 'DRAWER_TITLE'];
 
           // Get the bookshelves layer from webScene
           var shelfLayer = webscene.allLayers.filter(function(elem) {
-            return elem.title === "Bookshelves";
+            return elem.title === "Bookshelves Update - Bookshelves";
           }).items[0];
-          // get the DRAWER_ID and DRAWER_TITLE  
-          shelfLayer.outFields = ['DRAWER_ID'];
+          // get the LOC_ID and DRAWER_TITLE  
+          shelfLayer.outFields = ['LOC_ID'];
   
           // retrieve the layer view of the scene layer
           view.whenLayerView(cabLayer, shelfLayer)
@@ -480,25 +483,26 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
                     $(".esri-icon-table").hide();
                     const graphic = response.results[0].graphic;
                     console.log(graphic.attributes);
-                    // Get the Drawer_ID of the clicked drawer
-                    var drawerId = graphic.attributes.DRAWER_ID;
-                    var drawerTitle = graphic.attributes.DRAWER_TITLE; 
+                    // Get the LOC_ID of the clicked drawer
+                    var drawerId = graphic.attributes.LOC_ID;
+                    var drawerTitle = graphic.attributes.DRAWER_TITLE;
+                    var shelfTitle = graphic.attributes.Feature; 
                     //var cabId = graphic.attributes.CAB_ID;
                     $('#drawerTitle').html("Drawer " + drawerId + ": " + drawerTitle);
                     console.log(drawerId);
                     // Call to the ArcGIS REST API to retreive the maps in each drawer
                     $.ajax({
                             dataType: 'json',
-                            url: 'https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/maps129/FeatureServer/0/query?where=Drawer_ID+%3D+' + drawerId + '&objectIds=&time=&resultType=none&outFields=*&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
+                            url: tableURL + 'query?where=LOC_ID+%3D+' + drawerId + '&objectIds=&time=&resultType=none&outFields=*&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
                             type: "GET",    
                             success: function(data) {
                              if (data.features.length <= 0) {
                               cabLayer.popupTemplate = {
-                                  title: "<h6>Drawer Number: " + drawerId,
-                                  content: "Drawer Title: " + drawerTitle + "<br><br>Inventory coming soon!"                         
+                                  title: "<h6>Drawer ID: " + drawerId,
+                                  content: "Description: " + drawerTitle + "<br><br>Inventory coming soon!"                         
                                };
                                shelfLayer.popupTemplate = {
-                                  title: "<h6>Shelf Number: " + drawerId,
+                                  title: "<h6>Shelf ID: " + drawerId,
                                   //content: "Drawer Title: " + drawerTitle + "<br><br>Inventory coming soon!"                         
                                };
                                //$('#noDataModal').modal('show');
@@ -514,15 +518,16 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
                                var startCallNo = data.features[0].attributes.Call_Number;
                                var endCallNo = data.features[numResults - 1].attributes.Call_Number;                               
                                cabLayer.popupTemplate = {
-                                  title: "<b><h6>Drawer Number: " + drawerId + "</b>" ,
-                                  content: "<h6>Drawer Title: "  + drawerTitle + "<br> Item Count: " + numResults +
-                                  "<br> Call # Range: " + startCallNo + " - " + endCallNo,           
+                                  title: "<b><h6>Drawer ID: " + drawerId + "</b>" ,
+                                  content: "<h6>Description: "  + drawerTitle + "<br><br> Item Count: " + numResults +
+                                  "<br><br>Range: " + startCallNo + " - " + endCallNo,           
                                   actions: [tableViewerAction] // adds the custom popup action
                                };
 
                                shelfLayer.popupTemplate = {
-                                  title: "<b><h6>Shelf Number: " + drawerId + "</b>" ,
-                                  content: "<h6>Shelf Title: "  + drawerTitle +  "<br> Item Count: " + numResults,           
+                                  title: "<b><h6>Shelf ID: " + drawerId + "</b>" ,
+                                  content: "<h6>Description: "  + shelfTitle + "<br><br> Item Count: " + numResults +
+                                  "<br><br>Range: " + startCallNo + " - " + endCallNo,           
                                   actions: [tableViewerAction] // adds the custom popup action
                                };
 
@@ -543,11 +548,11 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
           // Watch for when features are selected
           view.popup.watch("selectedFeature", function (graphic) {
             if (graphic) {
-              if (graphic.layer.title == 'Map Cabinets' || graphic.layer.title == 'Bookshelves') {
+              if (graphic.layer.title == 'Map Cabinets Update - Map Cabinets' || graphic.layer.title == 'Bookshelves Update - Bookshelves') {
                 $(function() {            
                 $("body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popup__main-container").css('padding-bottom', '55px');                 
               });
-              } else  if (graphic.layer.title != 'Map Cabinets' || graphic.layer.title != 'Bookshelves') {
+              } else  if (graphic.layer.title != 'Map Cabinets Update - Map Cabinets' || graphic.layer.title != 'Bookshelves Update - Bookshelves') {
                 $(function() {            
                 $("body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popup__main-container").css('padding-bottom', '0px');                
               });
@@ -568,7 +573,7 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
             // call to query the REST API using the value of the search
             $.ajax({
                     dataType: 'json',
-                    url: 'https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/maps129/FeatureServer/0/query?where=Title+LIKE+%27%25' + searchVal + '%25%27+OR+Theme+LIKE+%27%25' +searchVal + '%25%27+OR+Geo+LIKE+%27%25' + searchVal +'%25%27+OR+Publication_Date+LIKE+%27%25' + searchVal + '%25%27+OR+Publisher+LIKE+%27%25' + searchVal + '%25%27+OR+Author+LIKE+%27%25' + searchVal + '%25%27+OR+Scale+LIKE+%27%25' + searchVal + '%25%27+OR+Language+LIKE+%27%25' + searchVal + '%25%27&objectIds=&time=&resultType=none&outFields=*&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
+                    url: tableURL + 'query?where=TITLE+LIKE+%27%25' + searchVal + '%25%27+OR+THEME+LIKE+%27%25' + searchVal + '%25%27+OR+Geo+LIKE+%27%25' + searchVal +'%25%27+OR+DATE+LIKE+%27%25' + searchVal + '%25%27+OR+PUBLISHER+LIKE+%27%25' + searchVal + '%25%27+OR+AUTHOR+LIKE+%27%25' + searchVal + '%25%27+OR+SCALE+LIKE+%27%25' + searchVal + '%25%27+OR+LANG+LIKE+%27%25' + searchVal + '%25%27&objectIds=&time=&resultType=none&outFields=*&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
                     type: "GET",    
                     success: function(data) {
                      if (data.features.length == 0) {
@@ -592,7 +597,7 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
             // call to query the REST API using the value of the search
             $.ajax({
                     dataType: 'json',
-                    url: 'https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/maps129/FeatureServer/0/query?where=Call_Number+LIKE+%27%25' + searchVal + '%25%27&objectIds=&time=&resultType=none&outFields=*&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
+                    url: tableURL + 'query?where=CALL_NUM+LIKE+%27%25' + searchVal + '%25%27&objectIds=&time=&resultType=none&outFields=*&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
                     type: "GET",    
                     success: function(data) {
                       if (data.features.length == 0) {
@@ -650,13 +655,13 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
          // Populate the Theme dropdown item
          $.ajax({
                   dataType: 'json',
-                  url: 'https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/maps129/FeatureServer/0/query?where=1%3D1&objectIds=&time=&resultType=none&outFields=Theme&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=true&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
+                  url: tableURL + 'query?where=1%3D1&objectIds=&time=&resultType=none&outFields=THEME&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=true&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
                   type: "GET",    
                   success: function(data) {
                     var themeSelect = document.getElementById('theme');
                     var features = data.features;    
                     Object.values(features).forEach(function(value) {                                         
-                      var themeVal = value.attributes.Theme;
+                      var themeVal = value.attributes.THEME;
                       var themeOpt = document.createElement("option");
                       themeOpt.textContent = themeVal;
                       themeOpt.value = themeVal;
@@ -668,13 +673,13 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
           // Populate the Location dropdown item
          $.ajax({
                   dataType: 'json',
-                  url: 'https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/maps129/FeatureServer/0/query?where=1%3D1&objectIds=&time=&resultType=none&outFields=Geo&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=true&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
+                  url: tableURL + 'query?where=1%3D1&objectIds=&time=&resultType=none&outFields=GEO&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=true&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
                   type: "GET",    
                   success: function(data) {
                     var geoSelect = document.getElementById('location');
                     var features = data.features;    
                     Object.values(features).forEach(function(value) {                                          
-                      var geoVal = value.attributes.Geo;
+                      var geoVal = value.attributes.GEO;
                       var geoOpt = document.createElement("option");
                       geoOpt.textContent = geoVal;
                       geoOpt.value = geoVal;
@@ -685,13 +690,13 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
          // Populate the Language dropdown item
          $.ajax({
                   dataType: 'json',
-                  url: 'https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/maps129/FeatureServer/0/query?where=1%3D1&objectIds=&time=&resultType=none&outFields=Language&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=true&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
+                  url: tableURL + 'query?where=1%3D1&objectIds=&time=&resultType=none&outFields=LANG&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=true&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
                   type: "GET",    
                   success: function(data) {
                     var langSelect = document.getElementById('language');
                     var features = data.features;    
                     Object.values(features).forEach(function(value) {                                          
-                      var langVal = value.attributes.Language;
+                      var langVal = value.attributes.LANG;
                       var langOpt = document.createElement("option");
                       langOpt.textContent = langVal;
                       langOpt.value = langVal;
@@ -803,27 +808,27 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
             alert('Please enter a value for both Start Year and End Year');
           } else {
             if (themeVal != 'Select Theme') {              
-              var themeString = "Theme = " + "'" + themeVal + "'"; 
+              var themeString = "THEME = " + "'" + themeVal + "'"; 
               searchStrings.push(themeString);                      
             }
             if (langVal != 'Select Language') {              
-              var langString = "Language = " + "'" + langVal + "'"; 
+              var langString = "LANG = " + "'" + langVal + "'"; 
               searchStrings.push(langString);                         
             }
             if (geoVal != 'Select Region / Geography') {              
-              var geoString = "Geo = " + "'" + geoVal + "'";
+              var geoString = "GEO = " + "'" + geoVal + "'";
               searchStrings.push(geoString);                   
             }
             if (authorVal != "") {              
-              var authorString = "Author LIKE " + "'%" + authorVal + "%'"; 
+              var authorString = "AUTHOR LIKE " + "'%" + authorVal + "%'"; 
               searchStrings.push(authorString);                    
             }
             if (pubVal != "") {              
-              var pubString = "Publisher LIKE " + "'%" + pubVal + "%'"; 
+              var pubString = "PUBLISHER LIKE " + "'%" + pubVal + "%'"; 
               searchStrings.push(pubString);                      
             }
             if (startYearVal != "" && endYearVal != "" ) {              
-              var dateString = "Publication_Date BETWEEN " + "'" + startYearVal + "' AND " + "'" + endYearVal + "'";
+              var dateString = "DATE BETWEEN " + "'" + startYearVal + "' AND " + "'" + endYearVal + "'";
               searchStrings.push(dateString);                    
             }
             // join the search strings from the array
@@ -833,7 +838,7 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
             // call to the rest api with the search string
             $.ajax({
                     dataType: 'json',
-                    url: 'https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/maps129/FeatureServer/0/query?where=' + queryString + '&objectIds=&time=&resultType=none&outFields=*&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
+                    url: tableURL + 'query?where=' + queryString + '&objectIds=&time=&resultType=none&outFields=*&returnHiddenFields=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&sqlFormat=none&f=pjson',
                     type: "GET",    
                     success: function(data) {
                       console.log(data);
