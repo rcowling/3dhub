@@ -245,9 +245,14 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
         Query,
         Home,
         Extent      
-      ) {    
+      ) { 
+        // Important variables for connecting the sceneview to the AGOL API  
         // Service URL for the maps_master table on AGOL    
-        var tableURL = "https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/maps_master/FeatureServer/0/";       
+        var tableURL = "https://services3.arcgis.com/0OPQIK59PJJqLK0A/ArcGIS/rest/services/maps_master/FeatureServer/0/";
+        // Title for the Cabinets Layer
+        var cabTitle = "Map Cabinets Update - Map Cabinets";
+        // Title for the Bookshelves layer
+        var shelfTitle = "Bookshelves Update - Bookshelves";       
        
         // setup the variable for highlight with no value  
         var highlight = null;  
@@ -338,7 +343,7 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
               if (drawerId < 241) {
                 // Get the cabinets layer from webScene
                 var cabLayer = webscene.allLayers.filter(function(elem) {
-                  return elem.title === "Map Cabinets";
+                  return elem.title === cabTitle;
                 }).items[0];        
                 var query = cabLayer.createQuery();
                 // Query the cabinets layer for the LOC_ID
@@ -384,7 +389,7 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
                         view.popup.open({
                           // Set the popup's title to the coordinates of the clicked location
                           title: "<h6><b>Drawer ID: "  + drawerId + "</b>",  
-                          content: "The item " + '<b>"' + row._row.data.attributes.Title + '"</b> ' + "is located in Drawer " + drawerId + ".",
+                          content: "The item " + '<b>"' + row._row.data.attributes.TITLE + '"</b> ' + "is located in Drawer " + drawerId + ".",
                           location: response.features[0].geometry.centroid, // Set the location of the popup to the clicked location 
                           actions: [returnToAction]      
                         });
@@ -392,7 +397,7 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
             } else if (drawerId >= 241) {
               // Get the cabinets layer from webScene
                 var shelfLayer = webscene.allLayers.filter(function(elem) {
-                  return elem.title === "Bookshelves";
+                  return elem.title === shelfTitle;
                 }).items[0];        
                 var query = shelfLayer.createQuery();
                 // Query the cabinets layer for the LOC_ID
@@ -437,7 +442,7 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
                         // open a popup at the drawer location of the selected map
                         view.popup.open({
                           // Set the popup's title to the coordinates of the clicked location
-                          title: "The item " + '"' + row._row.data.attributes.Title + '" ' + "is located in Shelf " + drawerId + ".", 
+                          title: "The item " + '"' + row._row.data.attributes.TITLE + '" ' + "is located in Shelf " + drawerId + ".", 
                           location: response.features[0].geometry.centroid,// Set the location of the popup to the clicked location  
                           actions: [returnToAction]      
                         });
@@ -454,14 +459,14 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
         view.when(function() {
           // Get the cabinets layer from webScene
           var cabLayer = webscene.allLayers.filter(function(elem) {
-            return elem.title === "Map Cabinets Update - Map Cabinets";
+            return elem.title === cabTitle;
           }).items[0];
           // get the LOC_ID and DRAWER_TITLE  
           cabLayer.outFields = ['LOC_ID', 'DRAWER_TITLE'];
 
           // Get the bookshelves layer from webScene
           var shelfLayer = webscene.allLayers.filter(function(elem) {
-            return elem.title === "Bookshelves Update - Bookshelves";
+            return elem.title === shelfTitle;
           }).items[0];
           // get the LOC_ID and DRAWER_TITLE  
           shelfLayer.outFields = ['LOC_ID'];
@@ -515,8 +520,8 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
                                var features = data.features;     
                                //$('#drawerModal').modal('show');                            
                                var numResults = data.features.length;
-                               var startCallNo = data.features[0].attributes.Call_Number;
-                               var endCallNo = data.features[numResults - 1].attributes.Call_Number;                               
+                               var startCallNo = data.features[0].attributes.CALL_NUM;
+                               var endCallNo = data.features[numResults - 1].attributes.CALL_NUM;                               
                                cabLayer.popupTemplate = {
                                   title: "<b><h6>Drawer ID: " + drawerId + "</b>" ,
                                   content: "<h6>Description: "  + drawerTitle + "<br><br> Item Count: " + numResults +
@@ -548,11 +553,11 @@ body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popu
           // Watch for when features are selected
           view.popup.watch("selectedFeature", function (graphic) {
             if (graphic) {
-              if (graphic.layer.title == 'Map Cabinets Update - Map Cabinets' || graphic.layer.title == 'Bookshelves Update - Bookshelves') {
+              if (graphic.layer.title == cabTitle || graphic.layer.title == shelfTitle) {
                 $(function() {            
                 $("body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popup__main-container").css('padding-bottom', '55px');                 
               });
-              } else  if (graphic.layer.title != 'Map Cabinets Update - Map Cabinets' || graphic.layer.title != 'Bookshelves Update - Bookshelves') {
+              } else  if (graphic.layer.title != cabTitle || graphic.layer.title != shelfTitle) {
                 $(function() {            
                 $("body:not(.esriIsPhoneSize) #viewDiv .esri-popup.esri-popup--is-docked .esri-popup__main-container").css('padding-bottom', '0px');                
               });
